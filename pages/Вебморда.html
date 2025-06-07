@@ -10,11 +10,6 @@
 </head>
 
 <body>
-    <script src="../scripts/sidebar.js"></script>
-    <script>
-        // Индекс активного пункта: 0 - расписание, 1 - предметы, 2 - преподаватели, 3 - аудитории, 4 - настройки
-        insertSidebar(0); // Для страницы предметов
-    </script>
     <!-- ======================= Основное содержимое ======================= -->
     <div class="main-content">
         <!-- ======================= Селектор недели ======================= -->
@@ -78,6 +73,8 @@
         </div>
     </div>
 
+    <script src="../scripts/sidebar.js"></script>
+
     <script src="../scripts/time_table_builder.js"></script>
     <script src="../scripts/week_manager.js"></script>
     <script src="../scripts/entity_select_updater.js"></script>
@@ -86,6 +83,10 @@
     <script>
         // Обработчики событий
         document.addEventListener('DOMContentLoaded', function() {
+            // Индекс активного пункта: 0 - расписание, 1 - предметы, 2 - преподаватели, 3 - аудитории, 4 - настройки
+            insertSidebar(0); // Для страницы предметов
+
+
             buildTimetable("09:00", 8); // 5 пар, начало в 09:00
             window.weekManager = new WeekManager('.current-week');
             LessonManager.init();
@@ -101,20 +102,6 @@
 
             document.querySelector('.sidebar li:nth-child(4)').addEventListener('click', function() {
                 window.location.href = 'rooms.html';
-            });
-
-            // Переключение сайдбара
-            document.querySelector('.toggle-sidebar').addEventListener('click', function() {
-                document.querySelector('.sidebar').classList.toggle('collapsed');
-            });
-
-            // Навигация по неделям
-            document.querySelector('.prev-week').addEventListener('click', function() {
-                weekManager.prevWeek();
-            });
-
-            document.querySelector('.next-week').addEventListener('click', function() {
-                weekManager.nextWeek();
             });
         });
     </script>

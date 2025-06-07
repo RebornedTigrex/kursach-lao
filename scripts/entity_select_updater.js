@@ -5,7 +5,7 @@
  * - Преподаватели (teachers)
  */
 
-function updateEntitySelect(selector, storageKey, placeholder) {
+async function updateEntitySelect(selector, storageKey, placeholder) {
     const select = document.querySelector(selector);
     if (!select) return;
     // Сохраняем первую опцию (заглушку)
@@ -18,12 +18,26 @@ function updateEntitySelect(selector, storageKey, placeholder) {
         opt.textContent = placeholder;
         select.appendChild(opt);
     }
-    // Получаем значения из localStorage
-    const items = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    let items = [];
+    if (window.DATA_SOURCE === "localstorage") {
+        items = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    } else {
+        // Получаем значения из backend
+        let url = '';
+        if (storageKey === 'subjects') url = 'http://localhost:8000/api/subjects/';
+        if (storageKey === 'rooms') url = 'http://localhost:8000/api/rooms/';
+        if (storageKey === 'teachers') url = 'http://localhost:8000/api/teachers/';
+        try {
+            const resp = await fetch(url);
+            items = await resp.json();
+        } catch (e) {
+            items = [];
+        }
+    }
     items.forEach(item => {
         const option = document.createElement('option');
-        option.value = item;
-        option.textContent = item;
+        option.value = typeof item === 'string' ? item : (item.name || item.number || item.full_name || '');
+        option.textContent = typeof item === 'string' ? item : (item.name || item.number || item.full_name || '');
         select.appendChild(option);
     });
 }

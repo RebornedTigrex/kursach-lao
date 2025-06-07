@@ -1,3 +1,6 @@
+// Глобальная переменная для выбора источника данных: "localstorage" или "sql"
+window.DATA_SOURCE = window.DATA_SOURCE || "localstorage"; // или "sql"
+
 const LessonManager = {
     lessons: {}, // { 'YYYY-MM-DD_row_col': {subject, room, teacher} }
     tbody: null,
@@ -27,6 +30,13 @@ const LessonManager = {
         this.currentCell = null;
         this.currentKey = null;
 
+        if (window.DATA_SOURCE === "localstorage") {
+            this.loadFromStorage();
+        } else {
+            // При старте загружаем расписание с backend для текущей недели
+            this.loadFromDB(window.weekManager?.getCurrentWeekStartISO());
+        }
+
         // Навешиваем обработчик на все ячейки расписания
         this.tbody.addEventListener('click', (e) => {
             const cell = e.target.closest('.lesson');
@@ -40,11 +50,19 @@ const LessonManager = {
 
         // Перерисовывать пары при смене недели
         document.addEventListener('weekChanged', (e) => {
-            this.renderLessons(e.detail.weekStartISO);
+            if (window.DATA_SOURCE === "localstorage") {
+                this.renderLessons(e.detail.weekStartISO);
+            } else {
+                this.loadFromDB(e.detail.weekStartISO);
+            }
         });
 
         // Первичная отрисовка
-        this.renderLessons(window.weekManager?.getCurrentWeekStartISO());
+        if (window.DATA_SOURCE === "localstorage") {
+            this.renderLessons(window.weekManager?.getCurrentWeekStartISO());
+        } else {
+            this.loadFromDB(window.weekManager?.getCurrentWeekStartISO());
+        }
     },
 
     // Генерация уникального ключа для ячейки (можно заменить на id из БД)
@@ -62,7 +80,12 @@ const LessonManager = {
         this.currentKey = this.getCellKey(cell);
 
         // Заполнить select'ы текущими значениями
-        const lesson = this.lessons[this.currentKey] || {};
+        let lesson = {};
+        if (window.DATA_SOURCE === "localstorage") {
+            lesson = this.lessons[this.currentKey] || {};
+        } else {
+            lesson = cell._lessonData || {};
+        }
         this.subjectSelect.value = lesson.subject || '';
         this.roomSelect.value = lesson.room || '';
         this.teacherSelect.value = lesson.teacher || '';
@@ -77,23 +100,40 @@ const LessonManager = {
     },
 
     // Сохранить данные о паре
-    saveLesson() {
+    async saveLesson() {
         if (!this.currentKey) return;
-        this.lessons[this.currentKey] = {
+        const data = {
             subject: this.subjectSelect.value,
             room: this.roomSelect.value,
             teacher: this.teacherSelect.value
         };
-        this.renderLessons(window.weekManager?.getCurrentWeekStartISO());
-        this.closeModal();
+        if (window.DATA_SOURCE === "localstorage") {
+            this.lessons[this.currentKey] = data;
+            this.saveToStorage();
+            this.renderLessons(window.weekManager?.getCurrentWeekStartISO());
+            this.closeModal();
+        } else {
+            // Отправить на backend
+            await this.saveToDB(this.currentCell, data);
+            await this.loadFromDB(window.weekManager?.getCurrentWeekStartISO());
+            this.closeModal();
+        }
     },
 
     // Очистить данные о паре
-    clearLesson() {
+    async clearLesson() {
         if (!this.currentKey) return;
-        delete this.lessons[this.currentKey];
-        this.renderLessons(window.weekManager?.getCurrentWeekStartISO());
-        this.closeModal();
+        if (window.DATA_SOURCE === "localstorage") {
+            delete this.lessons[this.currentKey];
+            this.saveToStorage();
+            this.renderLessons(window.weekManager?.getCurrentWeekStartISO());
+            this.closeModal();
+        } else {
+            // Удалить с backend
+            await this.deleteFromDB(this.currentCell);
+            await this.loadFromDB(window.weekManager?.getCurrentWeekStartISO());
+            this.closeModal();
+        }
     },
 
     // Отрисовать пары в таблице
@@ -101,15 +141,13 @@ const LessonManager = {
         if (!weekStartISO) return;
         this.tbody.querySelectorAll('.lesson').forEach(cell => {
             const key = this.getCellKey(cell);
-            const lesson = this.lessons[key];
-            if (lesson) {
-                cell.innerHTML = `
-                    <div class="lesson-content">
-                        <strong>Предмет:</strong> ${lesson.subject || ''}<br>
-                        <strong>Аудитория:</strong> ${lesson.room || ''}<br>
-                        <strong>Преподаватель:</strong> ${lesson.teacher || ''}
-                    </div>
-                `;
+            const data = this.lessons[key];
+            if (data && (data.subject || data.room || data.teacher)) {
+                let html = '';
+                if (data.subject) html += `<div><b>Предмет:</b> ${data.subject}</div>`;
+                if (data.room) html += `<div><b>Аудитория:</b> ${data.room}</div>`;
+                if (data.teacher) html += `<div><b>Преподаватель:</b> ${data.teacher}</div>`;
+                cell.innerHTML = `<div class="lesson-content">${html}</div>`;
             } else {
                 cell.innerHTML = `<div class="lesson-content"></div>`;
             }
@@ -118,14 +156,66 @@ const LessonManager = {
 
     // Методы для интеграции с БД (пример)
     async loadFromDB(weekStartISO) {
-        // Здесь можно сделать fetch к backend и заполнить this.lessons
-        // Пример:
-        // const data = await fetch(...);
-        // this.lessons = ...;
-        // this.renderLessons(weekStartISO);
+        // Получить расписание с backend
+        try {
+            const resp = await fetch(`http://localhost:8000/api/schedule/?week_start=${weekStartISO}`);
+            const data = await resp.json();
+            // Очищаем все ячейки
+            this.tbody.querySelectorAll('.lesson').forEach(cell => {
+                cell.innerHTML = `<div class="lesson-content"></div>`;
+                cell._lessonData = undefined;
+            });
+            // Заполняем ячейки
+            data.forEach(item => {
+                // item должен содержать row, col, subject, room, teacher
+                const row = item.row, col = item.col;
+                const cell = this.tbody.rows[row]?.cells[col];
+                if (cell) {
+                    let html = '';
+                    if (item.subject) html += `<div><b>Предмет:</b> ${item.subject}</div>`;
+                    if (item.room) html += `<div><b>Аудитория:</b> ${item.room}</div>`;
+                    if (item.teacher) html += `<div><b>Преподаватель:</b> ${item.teacher}</div>`;
+                    cell.innerHTML = `<div class="lesson-content">${html}</div>`;
+                    cell._lessonData = item;
+                }
+            });
+        } catch (e) {
+            alert('Ошибка загрузки расписания с сервера');
+        }
     },
-    async saveToDB() {
-        // Здесь можно отправить this.lessons на backend
+    async saveToDB(cell, data) {
+        // row/col для идентификации ячейки
+        const row = cell.parentElement.rowIndex;
+        const col = cell.cellIndex;
+        const weekISO = window.weekManager?.getCurrentWeekStartISO();
+        await fetch('http://localhost:8000/api/schedule/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                week_start: weekISO,
+                row, col,
+                ...data
+            })
+        });
+    },
+    async deleteFromDB(cell) {
+        const row = cell.parentElement.rowIndex;
+        const col = cell.cellIndex;
+        const weekISO = window.weekManager?.getCurrentWeekStartISO();
+        await fetch(`http://localhost:8000/api/schedule/?week_start=${weekISO}&row=${row}&col=${col}`, {
+            method: 'DELETE'
+        });
+    },
+
+    saveToStorage() {
+        localStorage.setItem('lessons', JSON.stringify(this.lessons));
+    },
+
+    loadFromStorage() {
+        const data = localStorage.getItem('lessons');
+        if (data) {
+            this.lessons = JSON.parse(data);
+        }
     }
 };
 
