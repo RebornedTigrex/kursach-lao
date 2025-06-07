@@ -37,6 +37,9 @@
                     <th>Суббота</th>
                 </tr>
             </thead>
+            <tbody>
+            <!-- buildTimetable будет заполнять сюда строки -->
+            </tbody>
         </table>
     </div>
 
@@ -83,17 +86,10 @@
     <script>
         // Обработчики событий
         document.addEventListener('DOMContentLoaded', function() {
-            
             buildTimetable("09:00", 8); // 5 пар, начало в 09:00
             window.weekManager = new WeekManager('.current-week');
-
-            document.querySelector('.timetable').addEventListener('click', function(e) {
-                const lesson = e.target.closest('.lesson');
-                if (lesson) {
-                    document.querySelector('.modal-overlay').classList.add('active');
-                }
-            });
-
+            LessonManager.init();
+            LessonManager.renderLessons();
 
             document.querySelector('.sidebar li:nth-child(2)').addEventListener('click', function() {
                 window.location.href = 'subjects.html';
@@ -119,27 +115,6 @@
 
             document.querySelector('.next-week').addEventListener('click', function() {
                 weekManager.nextWeek();
-            });
-
-            // Закрытие модального окна
-            document.querySelector('.modal-close').addEventListener('click', closeModal);
-            document.querySelector('.cancel-btn').addEventListener('click', closeModal);
-
-            function closeModal() {
-                document.querySelector('.modal-overlay').classList.remove('active');
-            }
-
-            // Сохранение изменений
-            document.querySelector('.save-btn').addEventListener('click', function() {
-                closeModal();
-            });
-
-            // Удаление пары
-            document.querySelector('.clear-btn').addEventListener('click', function() {
-                if (confirm('Вы уверены, что хотите удалить пару?')) {
-                    alert('Пара удалена');
-                    closeModal();
-                }
             });
         });
     </script>

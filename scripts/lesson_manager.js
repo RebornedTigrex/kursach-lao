@@ -1,157 +1,132 @@
-// Модуль управления парами в расписании
-const LessonManager = (function() {
-    let currentCell = null;
-    let currentDayIdx = null;
-    let currentLessonIdx = null;
+const LessonManager = {
+    lessons: {}, // { 'YYYY-MM-DD_row_col': {subject, room, teacher} }
+    tbody: null,
+    modal: null,
+    subjectSelect: null,
+    roomSelect: null,
+    teacherSelect: null,
+    saveBtn: null,
+    cancelBtn: null,
+    clearBtn: null,
+    closeBtn: null,
+    currentCell: null,
+    currentKey: null,
 
-    // Получить ключ для хранения пары
-    function getLessonKey(weekStartISO, dayIdx, lessonIdx) {
-        return `${weekStartISO}_${dayIdx}_${lessonIdx}`;
-    }
+    // Инициализация: навешиваем обработчики на ячейки и кнопки модального окна
+    init() {
+        this.tbody = document.querySelector('.timetable tbody');
+        this.modal = document.querySelector('.modal-overlay');
+        this.subjectSelect = document.querySelector('.subject-select');
+        this.roomSelect = document.querySelector('.room-select');
+        this.teacherSelect = document.querySelector('.teacher-select');
+        this.saveBtn = document.querySelector('.save-btn');
+        this.cancelBtn = document.querySelector('.cancel-btn');
+        this.clearBtn = document.querySelector('.clear-btn');
+        this.closeBtn = document.querySelector('.modal-close');
 
-    // Получить все пары для недели
-    function getLessonsForWeek(weekStartISO) {
-        return JSON.parse(localStorage.getItem(`lessons_${weekStartISO}`) || '{}');
-    }
+        this.currentCell = null;
+        this.currentKey = null;
 
-    // Сохранить все пары для недели
-    function saveLessonsForWeek(weekStartISO, lessons) {
-        localStorage.setItem(`lessons_${weekStartISO}`, JSON.stringify(lessons));
-    }
+        // Навешиваем обработчик на все ячейки расписания
+        this.tbody.addEventListener('click', (e) => {
+            const cell = e.target.closest('.lesson');
+            if (cell) this.openModal(cell);
+        });
 
-    // Открыть модальное окно и заполнить его данными
-    function openModal(cell, dayIdx, lessonIdx) {
-        currentCell = cell;
-        currentDayIdx = dayIdx;
-        currentLessonIdx = lessonIdx;
+        this.saveBtn.addEventListener('click', () => this.saveLesson());
+        this.cancelBtn.addEventListener('click', () => this.closeModal());
+        this.closeBtn.addEventListener('click', () => this.closeModal());
+        this.clearBtn.addEventListener('click', () => this.clearLesson());
 
-        const weekStartISO = window.weekManager.getCurrentWeekStartISO();
-        const lessons = getLessonsForWeek(weekStartISO);
-        const key = getLessonKey(weekStartISO, dayIdx, lessonIdx);
-        const data = lessons[key] || {};
+        // Перерисовывать пары при смене недели
+        document.addEventListener('weekChanged', (e) => {
+            this.renderLessons(e.detail.weekStartISO);
+        });
 
-        document.querySelector('.subject-select').value = data.subject || "";
-        document.querySelector('.room-select').value = data.room || "";
-        document.querySelector('.teacher-select').value = data.teacher || "";
+        // Первичная отрисовка
+        this.renderLessons(window.weekManager?.getCurrentWeekStartISO());
+    },
 
-        document.querySelector('.modal-overlay').classList.add('active');
-    }
+    // Генерация уникального ключа для ячейки (можно заменить на id из БД)
+    getCellKey(cell) {
+        // Пример: "2024-06-07_2_3" (неделя_строка_день)
+        const weekISO = window.weekManager?.getCurrentWeekStartISO() || 'unknown';
+        const row = cell.parentElement.rowIndex;
+        const col = cell.cellIndex;
+        return `${weekISO}_${row}_${col}`;
+    },
 
-    // Сохранить изменения пары
-    function saveLesson() {
-        if (currentCell === null) return;
-        const weekStartISO = window.weekManager.getCurrentWeekStartISO();
-        const lessons = getLessonsForWeek(weekStartISO);
+    // Открыть модальное окно для ячейки
+    openModal(cell) {
+        this.currentCell = cell;
+        this.currentKey = this.getCellKey(cell);
 
-        const subject = document.querySelector('.subject-select').value;
-        const room = document.querySelector('.room-select').value;
-        const teacher = document.querySelector('.teacher-select').value;
-
-        const key = getLessonKey(weekStartISO, currentDayIdx, currentLessonIdx);
-
-        if (subject || room || teacher) {
-            lessons[key] = { subject, room, teacher };
-        } else {
-            delete lessons[key];
-        }
-        saveLessonsForWeek(weekStartISO, lessons);
-
-        renderLessons();
-        closeModal();
-    }
-
-    // Удалить пару
-    function clearLesson() {
-        if (currentCell === null) return;
-        if (!confirm('Вы уверены, что хотите удалить пару?')) return;
-        const weekStartISO = window.weekManager.getCurrentWeekStartISO();
-        const lessons = getLessonsForWeek(weekStartISO);
-        const key = getLessonKey(weekStartISO, currentDayIdx, currentLessonIdx);
-        delete lessons[key];
-        saveLessonsForWeek(weekStartISO, lessons);
-
-        renderLessons();
-        closeModal();
-    }
+        // Заполнить select'ы текущими значениями
+        const lesson = this.lessons[this.currentKey] || {};
+        this.subjectSelect.value = lesson.subject || '';
+        this.roomSelect.value = lesson.room || '';
+        this.teacherSelect.value = lesson.teacher || '';
+        this.modal.classList.add('active');
+    },
 
     // Закрыть модальное окно
-    function closeModal() {
-        document.querySelector('.modal-overlay').classList.remove('active');
-        currentCell = null;
-    }
+    closeModal() {
+        this.modal.classList.remove('active');
+        this.currentCell = null;
+        this.currentKey = null;
+    },
 
-    // Отрисовать пары в расписании
-    function renderLessons() {
-        const weekStartISO = window.weekManager.getCurrentWeekStartISO();
-        const lessons = getLessonsForWeek(weekStartISO);
-        const table = document.querySelector('.timetable');
-        if (!table) return;
-        const rows = table.querySelectorAll('tbody tr');
-        rows.forEach((tr, lessonIdx) => {
-            if (tr.classList.contains('break')) return;
-            const cells = tr.querySelectorAll('.lesson');
-            
-            cells.forEach((cell, dayIdx) => {
-                const key = getLessonKey(weekStartISO, dayIdx, lessonIdx);
-                const data = lessons[key];
-                if (data && (data.subject || data.room || data.teacher)) {
-                    let html = '';
-                    if (data.subject) html += `<div><b>Предмет:</b> ${data.subject}</div>`;
-                    if (data.room) html += `<div><b>Аудитория:</b> ${data.room}</div>`;
-                    if (data.teacher) html += `<div><b>Преподаватель:</b> ${data.teacher}</div>`;
-                    cell.innerHTML = `<div class="lesson-content">${html}</div>`;
-                } else {
-                    cell.innerHTML = `<div class="lesson-content"></div>`;
-                }
-            });
-        });
-    }
+    // Сохранить данные о паре
+    saveLesson() {
+        if (!this.currentKey) return;
+        this.lessons[this.currentKey] = {
+            subject: this.subjectSelect.value,
+            room: this.roomSelect.value,
+            teacher: this.teacherSelect.value
+        };
+        this.renderLessons(window.weekManager?.getCurrentWeekStartISO());
+        this.closeModal();
+    },
 
-    // Навесить обработчики на расписание и модальное окно
-    function init() {
-        // Открытие модального окна по клику на ячейку
-        document.querySelector('.timetable').addEventListener('click', function(e) {
-            const cell = e.target.closest('.lesson');
-            if (cell) {
-                // Определяем индексы
-                const tr = cell.parentElement;
-                const tbody = tr.parentElement;
-                const lessonIdx = Array.from(tbody.children).filter(row => !row.classList.contains('break')).indexOf(tr);
-                const dayIdx = Array.from(tr.children).indexOf(cell) - 1; // -1, т.к. первый столбец — время
-                openModal(cell, dayIdx, lessonIdx);
+    // Очистить данные о паре
+    clearLesson() {
+        if (!this.currentKey) return;
+        delete this.lessons[this.currentKey];
+        this.renderLessons(window.weekManager?.getCurrentWeekStartISO());
+        this.closeModal();
+    },
+
+    // Отрисовать пары в таблице
+    renderLessons(weekStartISO) {
+        if (!weekStartISO) return;
+        this.tbody.querySelectorAll('.lesson').forEach(cell => {
+            const key = this.getCellKey(cell);
+            const lesson = this.lessons[key];
+            if (lesson) {
+                cell.innerHTML = `
+                    <div class="lesson-content">
+                        <strong>Предмет:</strong> ${lesson.subject || ''}<br>
+                        <strong>Аудитория:</strong> ${lesson.room || ''}<br>
+                        <strong>Преподаватель:</strong> ${lesson.teacher || ''}
+                    </div>
+                `;
+            } else {
+                cell.innerHTML = `<div class="lesson-content"></div>`;
             }
         });
+    },
 
-        // Сохранение
-        document.querySelector('.save-btn').addEventListener('click', saveLesson);
-
-        // Удаление
-        document.querySelector('.clear-btn').addEventListener('click', clearLesson);
-
-        // Закрытие
-        document.querySelector('.modal-close').addEventListener('click', closeModal);
-        document.querySelector('.cancel-btn').addEventListener('click', closeModal);
-
-        // Перерисовывать при смене недели
-        document.querySelector('.prev-week').addEventListener('click', () => setTimeout(renderLessons, 0));
-        document.querySelector('.next-week').addEventListener('click', () => setTimeout(renderLessons, 0));
-
-        // Перерисовать после генерации расписания
-        renderLessons();
+    // Методы для интеграции с БД (пример)
+    async loadFromDB(weekStartISO) {
+        // Здесь можно сделать fetch к backend и заполнить this.lessons
+        // Пример:
+        // const data = await fetch(...);
+        // this.lessons = ...;
+        // this.renderLessons(weekStartISO);
+    },
+    async saveToDB() {
+        // Здесь можно отправить this.lessons на backend
     }
+};
 
-    // Экспортируем только init
-    return {
-        init,
-        renderLessons
-    };
-})();
-
-// Инициализация после загрузки страницы
-document.addEventListener('DOMContentLoaded', function() {
-    LessonManager.init();
-});
-
-document.addEventListener('weekChanged', function(e) {
-    LessonManager.renderLessons();
-});
+// После построения таблицы вызовите LessonManager.init();
