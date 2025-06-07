@@ -1,0 +1,325 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+        body {
+            display: flex;
+            background-color: #f5f5f5;
+            color: #333333;
+        }
+
+        .entity-list { max-width: 400px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 24px; }
+        .entity-list h2 { margin-bottom: 16px; text-align: center; }
+        .entity-list ul { list-style: none; padding: 0; margin-bottom: 16px; }
+        .entity-list li { padding: 8px 0; border-bottom: 1px solid #eee; }
+        .entity-list form { display: flex; gap: 8px; }
+        .entity-list input[type="text"] { flex: 1; padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; }
+        .entity-list button { padding: 6px 14px; background: #6a5acd; color: #fff; border: none; border-radius: 4px; cursor: pointer; transition: background 0.2s; }
+        .entity-list button:hover { background: #483d8b; }
+
+        /*======================= Сайдбар ======================= */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: linear-gradient(to bottom, #6a5acd, #9370db);
+            color: white;
+            position: fixed;
+            transition: all 0.3s;
+            transform: translateX(0);
+            z-index: 100;
+        }
+        .sidebar.collapsed {transform: translateX(-200px);}
+
+        .logo {
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar ul {list-style: none; padding: 20px 0;}
+
+        .sidebar li {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar li i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar li:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar li.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: 3px solid white;
+        }
+
+        .toggle-sidebar {
+            position: absolute;
+            right: 10px;
+            top: 20px;
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        /*======================= Основное содержимое =======================*/
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            width: calc(100% - 250px);
+            transition: all 0.3s;
+        }
+
+        .sidebar.collapsed + .main-content {
+            margin-left: 50px;
+            width: calc(100% - 50px);
+        }
+
+        /*======================= Недельный селектор =======================*/
+        .week-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: white;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .week-selector button {
+            min-width: 36px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            background-color: #6a5acd;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            padding: 0;
+        }
+
+        .current-week {
+            flex: 1 1 auto;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #2563eb;
+            cursor: pointer;
+            text-decoration: underline;
+            transition: color 0.2s;
+            margin: 0 10px;
+            min-width: 160px;
+        }
+
+        .week-selector button:hover {
+            background-color: #483d8b;
+        }
+
+        .current-week:hover {
+            color: #1741a6;           /* более тёмный синий при наведении */
+            text-decoration: underline;
+        }
+
+        /*======================= Таблица расписания =======================*/
+        .timetable {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .timetable th, .timetable td {
+            padding: 12px 15px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+
+        .timetable th {
+            background-color: #6a5acd;
+            color: white;
+            font-weight: 500;
+        }
+
+        .timetable .time {
+            background-color: #f0f0f0;
+            font-weight: 500;
+        }
+
+        .timetable .lesson {
+            background-color: #e6e6fa;
+            cursor: pointer;
+            transition: background 0.2s;
+            height: 60px;
+        }
+
+        .timetable .lesson:hover {
+            background-color: #d8bfd8;
+        }
+
+        .timetable .lesson-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .timetable .break {
+            background-color: #f9f9f9;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .timetable .break td {
+            padding: 5px;
+        }
+
+        /*======================= Модальное окно =======================*/
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background-color: white;
+            border-radius: 8px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            transform: translateY(-20px);
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            color: #6a5acd;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group select, .form-group input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #6a5acd;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #483d8b;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }

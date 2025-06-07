@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Предметы</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <script src="../scripts/sidebar.js"></script>
+    <script>
+        // Индекс активного пункта: 0 - расписание, 1 - предметы, 2 - преподаватели, 3 - аудитории, 4 - настройки
+        insertSidebar(1); // Для страницы предметов
+    </script>
+    <!-- Основное содержимое страницы -->
+
+    <div class="entity-list">
+        <h2>Список предметов</h2>
+        <ul id="subjects-ul"></ul>
+        <form id="add-subject-form" autocomplete="off">
+            <input type="text" id="subject-input" placeholder="Новый предмет" required>
+            <button type="submit">Добавить</button>
+        </form>
+    </div>
+
+    <script>
+        // Переходы по меню
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('.sidebar li:nth-child(1)').addEventListener('click', function() {
+                window.location.href = 'Вебморда.html';
+            });
+            document.querySelector('.sidebar li:nth-child(2)').addEventListener('click', function() {
+                window.location.href = 'subjects.html';
+            });
+            document.querySelector('.sidebar li:nth-child(3)').addEventListener('click', function() {
+                window.location.href = 'teachers.html';
+            });
+            document.querySelector('.sidebar li:nth-child(4)').addEventListener('click', function() {
+                window.location.href = 'rooms.html';
+            });
+            document.querySelector('.sidebar li:nth-child(5)').addEventListener('click', function() {
+                window.location.href = 'settings.html';
+            });
+            document.querySelector('.toggle-sidebar').addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.toggle('collapsed');
+            });
+        });
+
+        // --- Работа с localStorage (или замените на fetch к backend) ---
+        function getSubjects() {
+            return JSON.parse(localStorage.getItem('subjects') || '[]');
+        }
+        function saveSubjects(subjects) {
+            localStorage.setItem('subjects', JSON.stringify(subjects));
+        }
+
+        // --- Рендер списка ---
+        function renderSubjects() {
+            const ul = document.getElementById('subjects-ul');
+            ul.innerHTML = '';
+            getSubjects().forEach(subject => {
+                const li = document.createElement('li');
+                li.textContent = subject;
+                ul.appendChild(li);
+            });
+        }
+
+        // --- Добавление предмета ---
+        document.getElementById('add-subject-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const input = document.getElementById('subject-input');
+            const value = input.value.trim();
+            if (!value) return;
+            const subjects = getSubjects();
+            if (!subjects.includes(value)) {
+                subjects.push(value);
+                saveSubjects(subjects);
+                renderSubjects();
+                updateModalSubjects(subjects);
+            }
+            input.value = '';
+        });
+
+        // --- Для интеграции с модальным меню на главной странице ---
+        function updateModalSubjects(subjects) {
+            window.localStorage.setItem('subjects_updated', Date.now());
+        }
+
+        // --- Слушаем обновления из других вкладок/окон ---
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'subjects') renderSubjects();
+        });
+
+        // --- Инициализация ---
+        renderSubjects();
+    </script>
+</body>
+</html>

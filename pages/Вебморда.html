@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расписание факультета</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <script src="../scripts/sidebar.js"></script>
+    <script>
+        // Индекс активного пункта: 0 - расписание, 1 - предметы, 2 - преподаватели, 3 - аудитории, 4 - настройки
+        insertSidebar(0); // Для страницы предметов
+    </script>
+    <!-- ======================= Основное содержимое ======================= -->
+    <div class="main-content">
+        <!-- ======================= Селектор недели ======================= -->
+        <div class="week-selector">
+            <button class="prev-week"><i class="fas fa-chevron-left"></i></button>
+            <span class="current-week">12-18 Сентября 2023</span>
+            <button class="next-week"><i class="fas fa-chevron-right"></i></button>
+        </div>
+
+        <!-- ======================= Таблица расписания ======================= -->
+        <table class="timetable">
+            <thead>
+                <tr>
+                    <th>Время</th>
+                    <th>Понедельник</th>
+                    <th>Вторник</th>
+                    <th>Среда</th>
+                    <th>Четверг</th>
+                    <th>Пятница</th>
+                    <th>Суббота</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <!-- Модальное окно редактирования -->
+    <div class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Редактирование пары</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Предмет:</label>
+                    <select class="subject-select">
+                        <option value="">-- Выберите предмет --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Аудитория:</label>
+                    <select class="room-select">
+                        <option value="">-- Выберите аудиторию --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Преподаватель:</label>
+                    <select class="teacher-select">
+                        <option value="">-- Выберите преподавателя --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger clear-btn">Удалить пару</button>
+                <button class="btn btn-secondary cancel-btn">Отмена</button>
+                <button class="btn btn-primary save-btn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/time_table_builder.js"></script>
+    <script src="../scripts/week_manager.js"></script>
+    <script src="../scripts/entity_select_updater.js"></script>
+    <script src="../scripts/lesson_manager.js"></script>
+
+    <script>
+        // Обработчики событий
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            buildTimetable("09:00", 8); // 5 пар, начало в 09:00
+            window.weekManager = new WeekManager('.current-week');
+
+            document.querySelector('.timetable').addEventListener('click', function(e) {
+                const lesson = e.target.closest('.lesson');
+                if (lesson) {
+                    document.querySelector('.modal-overlay').classList.add('active');
+                }
+            });
+
+
+            document.querySelector('.sidebar li:nth-child(2)').addEventListener('click', function() {
+                window.location.href = 'subjects.html';
+            });
+
+            document.querySelector('.sidebar li:nth-child(3)').addEventListener('click', function() {
+                window.location.href = 'teachers.html';
+            });
+
+            document.querySelector('.sidebar li:nth-child(4)').addEventListener('click', function() {
+                window.location.href = 'rooms.html';
+            });
+
+            // Переключение сайдбара
+            document.querySelector('.toggle-sidebar').addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.toggle('collapsed');
+            });
+
+            // Навигация по неделям
+            document.querySelector('.prev-week').addEventListener('click', function() {
+                weekManager.prevWeek();
+            });
+
+            document.querySelector('.next-week').addEventListener('click', function() {
+                weekManager.nextWeek();
+            });
+
+            // Закрытие модального окна
+            document.querySelector('.modal-close').addEventListener('click', closeModal);
+            document.querySelector('.cancel-btn').addEventListener('click', closeModal);
+
+            function closeModal() {
+                document.querySelector('.modal-overlay').classList.remove('active');
+            }
+
+            // Сохранение изменений
+            document.querySelector('.save-btn').addEventListener('click', function() {
+                closeModal();
+            });
+
+            // Удаление пары
+            document.querySelector('.clear-btn').addEventListener('click', function() {
+                if (confirm('Вы уверены, что хотите удалить пару?')) {
+                    alert('Пара удалена');
+                    closeModal();
+                }
+            });
+        });
+    </script>
+    
+</body>
+</html>
