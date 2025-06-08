@@ -4,10 +4,11 @@ from sqlalchemy.dialects.postgresql import TIME
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
+import psycopg2
 
 # DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:password@localhost:5432/your_db")
 
-DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/postgres?client_encoding=utf8"
+DATABASE_URL = "postgresql+psycopg2://postgres:postgres@localhost/postgres"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
@@ -49,7 +50,8 @@ def init_db():
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:8080"],  # Фронтенд
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
