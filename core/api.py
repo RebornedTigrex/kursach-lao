@@ -1,39 +1,33 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Time
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from sqlalchemy.dialects.postgresql import TIME
-import os
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
-from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime
 
-# Пример строки подключения: postgresql://user:password@localhost:5432/dbname
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:password@localhost:5432/your_db")
+# DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:password@localhost:5432/your_db")
+
+DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/postgres?client_encoding=utf8"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
 
-# Пример модели "Subject"
 class Subject(Base):
     __tablename__ = "subjects"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
 
-# Пример модели "Teacher"
 class Teacher(Base):
     __tablename__ = "teachers"
     id = Column(Integer, primary_key=True, index=True)
     full_name = Column(String, nullable=False)
 
-# Пример модели "Classroom"
 class Classroom(Base):
     __tablename__ = "classrooms"
     id = Column(Integer, primary_key=True, index=True)
     number = Column(String, nullable=False)
 
-# Пример модели "Schedule"
 class Schedule(Base):
     __tablename__ = "schedules"
     id = Column(Integer, primary_key=True, index=True)

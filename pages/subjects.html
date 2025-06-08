@@ -25,28 +25,6 @@
     </div>
 
     <script>
-        // Переходы по меню
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelector('.sidebar li:nth-child(1)').addEventListener('click', function() {
-                window.location.href = 'Вебморда.html';
-            });
-            document.querySelector('.sidebar li:nth-child(2)').addEventListener('click', function() {
-                window.location.href = 'subjects.html';
-            });
-            document.querySelector('.sidebar li:nth-child(3)').addEventListener('click', function() {
-                window.location.href = 'teachers.html';
-            });
-            document.querySelector('.sidebar li:nth-child(4)').addEventListener('click', function() {
-                window.location.href = 'rooms.html';
-            });
-            document.querySelector('.sidebar li:nth-child(5)').addEventListener('click', function() {
-                window.location.href = 'settings.html';
-            });
-            document.querySelector('.toggle-sidebar').addEventListener('click', function() {
-                document.querySelector('.sidebar').classList.toggle('collapsed');
-            });
-        });
-
         // --- Работа с localStorage (или замените на fetch к backend) ---
         function getSubjects() {
             return JSON.parse(localStorage.getItem('subjects') || '[]');

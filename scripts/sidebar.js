@@ -26,7 +26,7 @@ function insertSidebar(activeIndex = 0) {
 
     // Обработчики переходов
     const links = [
-        'Вебморда.html',
+        'schedule.html',
         'subjects.html',
         'teachers.html',
         'rooms.html',

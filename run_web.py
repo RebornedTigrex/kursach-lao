@@ -8,7 +8,7 @@ def run_backend():
 
 def open_browser():
     time.sleep(2)
-    webbrowser.open("http://127.0.0.1:3000/pages/Вебморда.html")  # или путь к вашей html
+    webbrowser.open("http://127.0.0.1:3000/pages/schedule.html")  # или путь к вашей html
 
 if __name__ == "__main__":
     threading.Thread(target=run_backend, daemon=True).start()
