@@ -50,7 +50,7 @@ def init_db():
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080"],  # Фронтенд
+    allow_origins=["http://localhost:3000"],  # Фронтенд
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -123,14 +123,3 @@ def delete_schedule(week_start: str = Query(...), row: int = Query(...), col: in
         db.delete(sched)
         db.commit()
     return {"status": "ok"}
-
-
-
-'''
-Как использовать:
-
-В начале работы выставьте window.DATA_SOURCE = "sql" или "localstorage" в консоли браузера или прямо в js-файле.
-Запустите run_web.py — он поднимет backend и откроет веб-интерфейс.
-Теперь можно работать с расписанием через SQL или localStorage, переключая источник данных одной переменной.
-Примечание: Для полноценной работы с SQL потребуется доработать API (например, корректно определять row/col, start_time/end_time, group_id и т.д.), а также заполнить таблицы subjects, teachers, classrooms начальными данными.
-'''
