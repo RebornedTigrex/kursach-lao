@@ -15,6 +15,22 @@
         .entity-list h2 { margin-bottom: 16px; text-align: center; }
         .entity-list ul { list-style: none; padding: 0; margin-bottom: 16px; }
         .entity-list li { padding: 8px 0; border-bottom: 1px solid #eee; }
+        .entity-list li span { flex: 1; }
+        .entity-list .delete-btn { 
+            background: #dc3545; 
+            color: #fff; 
+            border: none; 
+            border-radius: 4px; 
+            width: 24px; 
+            height: 24px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            font-size: 0.9rem; 
+            transition: background 0.2s; 
+        }
+        .entity-list .delete-btn:hover { background: #c82333; }
         .entity-list form { display: flex; gap: 8px; }
         .entity-list input[type="text"] { flex: 1; padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; }
         .entity-list button { padding: 6px 14px; background: #6a5acd; color: #fff; border: none; border-radius: 4px; cursor: pointer; transition: background 0.2s; }

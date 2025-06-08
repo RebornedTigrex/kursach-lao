@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS classrooms (
 CREATE TABLE IF NOT EXISTS schedules (
     id SERIAL PRIMARY KEY,
     day_of_week INTEGER NOT NULL,
-    start_time TIME NOT NULL,
-    end_time TIME NOT NULL,
+    start_time TEXT NOT NULL,
+    end_time TEXT NOT NULL,
     subject_id INTEGER REFERENCES subjects(id),
     teacher_id INTEGER REFERENCES teachers(id),
     classroom_id INTEGER REFERENCES classrooms(id)

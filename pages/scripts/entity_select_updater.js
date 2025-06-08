@@ -49,6 +49,10 @@ function updateAllEntitySelects() {
     updateEntitySelect('.teacher-select', 'teachers', '-- Выберите преподавателя --');
 }
 
+function delEntity(){
+    
+}
+
 // Вызывать при открытии модального окна:
 document.addEventListener('DOMContentLoaded', function() {
     // Открытие модального окна — обновляем все списки

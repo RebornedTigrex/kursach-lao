@@ -1,14 +1,12 @@
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
-from sqlalchemy.dialects.postgresql import TIME
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
-import psycopg2
 
 # DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:password@localhost:5432/your_db")
 
-DATABASE_URL = "postgresql+psycopg2://postgres:postgres@localhost/postgres"
+DATABASE_URL = "sqlite:///database.db"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
@@ -33,8 +31,8 @@ class Schedule(Base):
     __tablename__ = "schedules"
     id = Column(Integer, primary_key=True, index=True)
     day_of_week = Column(Integer, nullable=False)  # 0 - понедельник, 6 - воскресенье
-    start_time = Column(TIME, nullable=False)
-    end_time = Column(TIME, nullable=False)
+    start_time = Column(String, nullable=False)
+    end_time = Column(String, nullable=False)
     subject_id = Column(Integer, ForeignKey("subjects.id"))
     teacher_id = Column(Integer, ForeignKey("teachers.id"))
     classroom_id = Column(Integer, ForeignKey("classrooms.id"))
@@ -97,15 +95,13 @@ def get_schedule(week_start: str = Query(...), group_id: int = 1):
 @app.post("/api/schedule/")
 def post_schedule(data: dict):
     db = SessionLocal()
-    # data: week_start, row, col, subject, room, teacher
-    # MVP: ищем по row/col, если есть - обновляем, иначе создаём
     subject = db.query(Subject).filter_by(name=data.get("subject")).first()
     teacher = db.query(Teacher).filter_by(full_name=data.get("teacher")).first()
     room = db.query(Classroom).filter_by(number=data.get("room")).first()
     sched = Schedule(
         day_of_week=data.get("row"),
-        start_time=datetime.strptime("09:00", "%H:%M").time(),
-        end_time=datetime.strptime("10:30", "%H:%M").time(),
+        start_time="09:00",  # Храним как строку
+        end_time="10:30",    # Храним как строку
         subject_id=subject.id if subject else None,
         teacher_id=teacher.id if teacher else None,
         classroom_id=room.id if room else None,
@@ -117,7 +113,6 @@ def post_schedule(data: dict):
 @app.delete("/api/schedule/")
 def delete_schedule(week_start: str = Query(...), row: int = Query(...), col: int = Query(...)):
     db = SessionLocal()
-    # MVP: удаляем по day_of_week=row
     sched = db.query(Schedule).filter_by(day_of_week=row).first()
     if sched:
         db.delete(sched)

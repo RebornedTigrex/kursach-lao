@@ -18,12 +18,15 @@
 
     <div class="entity-list">
         <h2>Список преподавателей</h2>
-        <ul id="teachers-ul"></ul>
-        <form id="add-teacher-form" autocomplete="off">
-            <input type="text" id="teacher-input" placeholder="Новый преподаватель" required>
+        <ul id="teachers-list"></ul>
+        <form id="add-teacher-form">
+            <input type="text" id="teacher-name" placeholder="Введите ФИО преподавателя" required>
             <button type="submit">Добавить</button>
         </form>
     </div>
+
+    <script src="/scripts/entity_select_updater.js"></script>
+    
     <script>
         function getTeachers() {
             return JSON.parse(localStorage.getItem('teachers') || '[]');

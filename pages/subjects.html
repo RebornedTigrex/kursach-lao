@@ -25,7 +25,6 @@
     </div>
 
     <script>
-        // --- Работа с localStorage (или замените на fetch к backend) ---
         function getSubjects() {
             return JSON.parse(localStorage.getItem('subjects') || '[]');
         }
@@ -41,6 +40,20 @@
                 const li = document.createElement('li');
                 li.textContent = subject;
                 ul.appendChild(li);
+            });
+        }
+
+        function delSubject(){
+            const ul = document.getElementById('subjects-ul');
+            ul.addEventListener('click', function(e) {
+                if (e.target.classList.contains('delete-btn')) {
+                    const subject = e.target.dataset.subject;
+                    const subjects = getSubjects();
+                    const updatedSubjects = subjects.filter(s => s !== subject);
+                    saveSubjects(updatedSubjects);
+                    renderSubjects();
+                    updateModalSubjects(updatedSubjects);
+                }
             });
         }
 
