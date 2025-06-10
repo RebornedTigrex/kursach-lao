@@ -1,11 +1,11 @@
 {
-  "version": "0.2.0",
   "configurations": [
     {
-      "type": "msedge",
-      "request": "attach",
-      "name": "Attach to browser",
-      "port": 9222
+      "name": "Python",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "C:\\Users\\Tigrex\\Documents\\GitHub\\kursach-lao\\run_web.py",
+      "console": "integratedTerminal"
     }
   ]
 }

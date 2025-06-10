@@ -31,6 +31,7 @@ def open_browser():
     time.sleep(2)  # Даём время на запуск серверов
     webbrowser.open("http://127.0.0.1:3000/schedule.html", 0)
 
+
 def signal_handler(sig, frame):
     global backend_process, frontend_process
     logger.info("Получен сигнал прерывания. Завершение процессов...")
