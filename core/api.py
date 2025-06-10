@@ -45,6 +45,8 @@ class Schedule(Base):
 def init_db():
     Base.metadata.create_all(bind=engine)
 
+init_db()
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,

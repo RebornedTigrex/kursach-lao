@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
+<script>window.DATA_SOURCE = "sql" // localstorage || sql</script>
+
 <body>
     <!-- ======================= Основное содержимое ======================= -->
     <div class="main-content">
@@ -81,7 +83,6 @@
     <script src="../scripts/lesson_manager.js"></script>
 
     <script>
-        window.DATA_SOURCE = "localstorage" // localstorage || sql
         // Обработчики событий
         document.addEventListener('DOMContentLoaded', function() {
             // Индекс активного пункта: 0 - расписание, 1 - предметы, 2 - преподаватели, 3 - аудитории, 4 - настройки

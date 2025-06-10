@@ -26,10 +26,33 @@
 
     <script>
         function getSubjects() {
-            return JSON.parse(localStorage.getItem('subjects') || '[]');
+            if(window.DATA_SOURCE === "localstorage"){
+                return JSON.parse(localStorage.getItem('subjects') || '[]');}   
+            else{
+                fetch("http://localhost:8000/api/schedule/", "GET")
+                .then(response => response.json())
+                .then(data => console.log(data))
+                .catch(error => console.error('Ошибка:', error));
+
+                return response.getItem('subjects') || '[]';
+            }
         }
         function saveSubjects(subjects) {
-            localStorage.setItem('subjects', JSON.stringify(subjects));
+            if(window.DATA_SOURCE === "localstorage"){
+                localStorage.setItem('subjects', JSON.stringify(subjects));
+            }
+            else{
+                fetch("http://localhost:8000/api/schedule/", {
+                    method:"POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name: name }),
+                })
+                .then(response => response.json())
+                .then(data => console.log(data))
+                .catch(error => console.error('Ошибка:', error));
+            }
         }
 
         // --- Рендер списка ---
@@ -43,6 +66,7 @@
             });
         }
 
+        // Не работает
         function delSubject(){
             const ul = document.getElementById('subjects-ul');
             ul.addEventListener('click', function(e) {
@@ -75,7 +99,12 @@
 
         // --- Для интеграции с модальным меню на главной странице ---
         function updateModalSubjects(subjects) {
-            window.localStorage.setItem('subjects_updated', Date.now());
+            if(window.DATA_SOURCE === "localstorage"){
+                window.localStorage.setItem('subjects_updated', Date.now());
+            }
+            else{
+                window.
+            }
         }
 
         // --- Слушаем обновления из других вкладок/окон ---
