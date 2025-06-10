@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
     <script src="../scripts/sidebar.js"></script>
     <script>
@@ -14,7 +13,6 @@
         insertSidebar(1); // Для страницы предметов
     </script>
     <!-- Основное содержимое страницы -->
-
     <div class="entity-list">
         <h2>Список предметов</h2>
         <ul id="subjects-ul"></ul>
@@ -25,91 +23,126 @@
     </div>
 
     <script>
-        function getSubjects() {
-            if(window.DATA_SOURCE === "localstorage"){
-                return JSON.parse(localStorage.getItem('subjects') || '[]');}   
-            else{
-                fetch("http://localhost:8000/api/schedule/", "GET")
-                .then(response => response.json())
-                .then(data => console.log(data))
-                .catch(error => console.error('Ошибка:', error));
-
-                return response.getItem('subjects') || '[]';
+        // --- Получение списка предметов ---
+        async function getSubjects() {
+            if (window.DATA_SOURCE === "localstorage") {
+                return JSON.parse(localStorage.getItem('subjects') || '[]');
+            } else {
+                try {
+                    const response = await fetch('http://localhost:8000/api/subjects/');
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    const data = await response.json();
+                    return data.map(item => item.name); // Возвращаем только названия предметов
+                } catch (error) {
+                    console.error('Ошибка при загрузке предметов:', error);
+                    return [];
+                }
             }
         }
-        function saveSubjects(subjects) {
-            if(window.DATA_SOURCE === "localstorage"){
+
+        // --- Сохранение списка предметов ---
+        async function saveSubjects(subjects) {
+            if (window.DATA_SOURCE === "localstorage") {
                 localStorage.setItem('subjects', JSON.stringify(subjects));
+            } else {
+                try {
+                    const response = await fetch('http://localhost:8000/api/subjects/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ name: subjects[subjects.length - 1] }) // Добавляем только последний предмет
+                    });
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    const data = await response.json();
+                    console.log('Сохранено:', data);
+                } catch (error) {
+                    console.error('Ошибка при сохранении предметов:', error);
+                    alert('Не удалось добавить предмет. Проверьте сервер.');
+                }
             }
-            else{
-                fetch("http://localhost:8000/api/schedule/", {
-                    method:"POST",
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ name: name }),
-                })
-                .then(response => response.json())
-                .then(data => console.log(data))
-                .catch(error => console.error('Ошибка:', error));
+        }
+
+        // --- Удаление предмета ---
+        async function deleteSubject(subject) {
+            if (window.DATA_SOURCE === "localstorage") {
+                let subjects = await getSubjects();
+                subjects = subjects.filter(s => s !== subject);
+                saveSubjects(subjects);
+            } else {
+                try {
+                    const response = await fetch(`http://localhost:8000/api/subjects/${encodeURIComponent(subject)}/`, {
+                        method: 'DELETE'
+                    });
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    console.log('Предмет удалён:', subject);
+                } catch (error) {
+                    console.error('Ошибка при удалении предмета:', error);
+                }
             }
         }
 
         // --- Рендер списка ---
-        function renderSubjects() {
+        async function renderSubjects() {
             const ul = document.getElementById('subjects-ul');
             ul.innerHTML = '';
-            getSubjects().forEach(subject => {
+            const subjects = await getSubjects();
+            subjects.forEach(subject => {
                 const li = document.createElement('li');
-                li.textContent = subject;
+                li.innerHTML = `
+                    <span>${subject}</span>
+                    <button class="delete-btn" data-subject="${subject}">×</button>
+                `;
                 ul.appendChild(li);
-            });
-        }
 
-        // Не работает
-        function delSubject(){
-            const ul = document.getElementById('subjects-ul');
-            ul.addEventListener('click', function(e) {
-                if (e.target.classList.contains('delete-btn')) {
-                    const subject = e.target.dataset.subject;
-                    const subjects = getSubjects();
-                    const updatedSubjects = subjects.filter(s => s !== subject);
-                    saveSubjects(updatedSubjects);
-                    renderSubjects();
-                    updateModalSubjects(updatedSubjects);
-                }
+                // Обработчик удаления
+                li.querySelector('.delete-btn').addEventListener('click', () => {
+                    if (confirm(`Удалить предмет "${subject}"?`)) {
+                        deleteSubject(subject).then(() => {
+                            renderSubjects();
+                            updateModalSubjects(getSubjects());
+                        });
+                    }
+                });
             });
         }
 
         // --- Добавление предмета ---
-        document.getElementById('add-subject-form').addEventListener('submit', function(e) {
+        document.getElementById('add-subject-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const input = document.getElementById('subject-input');
             const value = input.value.trim();
             if (!value) return;
-            const subjects = getSubjects();
+            const subjects = await getSubjects();
             if (!subjects.includes(value)) {
                 subjects.push(value);
-                saveSubjects(subjects);
+                await saveSubjects(subjects);
                 renderSubjects();
                 updateModalSubjects(subjects);
             }
             input.value = '';
         });
 
-        // --- Для интеграции с модальным меню на главной странице ---
+        // --- Обновление модального окна на главной странице ---
         function updateModalSubjects(subjects) {
-            if(window.DATA_SOURCE === "localstorage"){
+            if (window.DATA_SOURCE === "localstorage") {
                 window.localStorage.setItem('subjects_updated', Date.now());
-            }
-            else{
-                window.
+                // Диспетчер события для уведомления других вкладок
+                window.dispatchEvent(new CustomEvent('subjectsUpdated', { detail: subjects }));
+            } else {
+                // Для SQL можно отправить событие или обновить напрямую через API
+                window.dispatchEvent(new CustomEvent('subjectsUpdated', { detail: subjects }));
+                // (Опционально) Уведомить сервер об обновлении, если нужно
             }
         }
 
         // --- Слушаем обновления из других вкладок/окон ---
         window.addEventListener('storage', function(e) {
-            if (e.key === 'subjects') renderSubjects();
+            if (e.key === 'subjects' || e.key === 'subjects_updated') renderSubjects();
+        });
+
+        window.addEventListener('subjectsUpdated', (e) => {
+            renderSubjects();
         });
 
         // --- Инициализация ---
