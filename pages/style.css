@@ -20,7 +20,7 @@
             background: #dc3545; 
             color: #fff; 
             border: none; 
-            border-radius: 4px; 
+            border-radius: 50%; 
             width: 24px; 
             height: 24px; 
             display: flex; 
@@ -40,7 +40,7 @@
         .sidebar {
             width: 250px;
             height: 100vh;
-            background: linear-gradient(to bottom, #6a5acd, #9370db);
+            background: linear-gradient(to bottom, #6a5acd, #ad92e4);
             color: white;
             position: fixed;
             transition: all 0.3s;
