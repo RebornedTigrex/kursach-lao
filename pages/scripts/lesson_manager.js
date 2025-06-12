@@ -191,36 +191,25 @@ const LessonManager = {
         const row = cell.parentElement.rowIndex;
         const col = cell.cellIndex;
         const weekISO = window.weekManager?.getCurrentWeekStartISO() || 'unknown';
-        const key = `${weekISO}_${row}_${col}`;
-        try {
-            await fetch(`http://localhost:8000/api/schedule/${key}/`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    subject: data.subject,
-                    room: data.room,
-                    teacher: data.teacher
-                })
-            });
-        } catch (e) {
-            alert('Ошибка сохранения данных на сервере');
-        }
+        await fetch('http://localhost:8000/api/schedule/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                week_start: weekISO,
+                row: row,
+                col: col,
+                ...data
+            })
+        });
     },
 
     async deleteFromDB(cell) {
         const row = cell.parentElement.rowIndex;
         const col = cell.cellIndex;
         const weekISO = window.weekManager?.getCurrentWeekStartISO() || 'unknown';
-        const key = `${weekISO}_${row}_${col}`;
-        try {
-            await fetch(`http://localhost:8000/api/schedule/${key}/`, {
-                method: 'DELETE'
-            });
-        } catch (e) {
-            alert('Ошибка удаления данных с сервера');
-        }
+        await fetch(`http://localhost:8000/api/schedule/?week_start=${weekISO}&row=${row}&col=${col}`, {
+            method: 'DELETE'
+        });
     },
 
     // Локальное хранилище
@@ -238,3 +227,62 @@ const LessonManager = {
 };
 
 LessonManager.init();
+
+// Универсальная функция для обновления select'ов модального окна
+async function updateModalSelects() {
+    // Subjects
+    try {
+        let subjects = [];
+        if (window.DATA_SOURCE === "localstorage") {
+            subjects = JSON.parse(localStorage.getItem('subjects') || '[]').map(name => ({ name }));
+        } else {
+            const resp = await fetch('http://localhost:8000/api/subjects/');
+            subjects = await resp.json();
+        }
+        const select = document.querySelector('.subject-select');
+        const prev = select.value;
+        select.innerHTML = '<option value="">-- Выберите предмет --</option>' +
+            subjects.map(item => `<option value="${item.name}">${item.name}</option>`).join('');
+        select.value = prev;
+    } catch (e) {
+        // fallback: очистить select
+        const select = document.querySelector('.subject-select');
+        select.innerHTML = '<option value="">-- Выберите предмет --</option>';
+    }
+    // Rooms
+    try {
+        let rooms = [];
+        if (window.DATA_SOURCE === "localstorage") {
+            rooms = JSON.parse(localStorage.getItem('rooms') || '[]').map(number => ({ number }));
+        } else {
+            const resp = await fetch('http://localhost:8000/api/rooms/');
+            rooms = await resp.json();
+        }
+        const select = document.querySelector('.room-select');
+        const prev = select.value;
+        select.innerHTML = '<option value="">-- Выберите аудиторию --</option>' +
+            rooms.map(item => `<option value="${item.number}">${item.number}</option>`).join('');
+        select.value = prev;
+    } catch (e) {
+        const select = document.querySelector('.room-select');
+        select.innerHTML = '<option value="">-- Выберите аудиторию --</option>';
+    }
+    // Teachers
+    try {
+        let teachers = [];
+        if (window.DATA_SOURCE === "localstorage") {
+            teachers = JSON.parse(localStorage.getItem('teachers') || '[]').map(full_name => ({ full_name }));
+        } else {
+            const resp = await fetch('http://localhost:8000/api/teachers/');
+            teachers = await resp.json();
+        }
+        const select = document.querySelector('.teacher-select');
+        const prev = select.value;
+        select.innerHTML = '<option value="">-- Выберите преподавателя --</option>' +
+            teachers.map(item => `<option value="${item.full_name}">${item.full_name}</option>`).join('');
+        select.value = prev;
+    } catch (e) {
+        const select = document.querySelector('.teacher-select');
+        select.innerHTML = '<option value="">-- Выберите преподавателя --</option>';
+    }
+}
