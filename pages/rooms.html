@@ -6,56 +6,116 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-
-
-
 <body>
-    <script src="../scripts/sidebar.js"></script>
+    <script src="scripts/sidebar.js"></script>
     <script>
-        // Индекс активного пункта: 0 - расписание, 1 - предметы, 2 - преподаватели, 3 - аудитории, 4 - настройки
-        insertSidebar(3); // Например, для страницы предметов
+        insertSidebar(3); // Для страницы аудиторий
     </script>
-
     <div class="entity-list">
         <h2>Список аудиторий</h2>
         <ul id="rooms-ul"></ul>
         <form id="add-room-form" autocomplete="off">
-            <input type="text" id="room-input" placeholder="Новая аудитория" required>
+            <input type="text" id="room-input" placeholder="Номер аудитории" required>
             <button type="submit">Добавить</button>
         </form>
     </div>
     <script>
-        function getRooms() {
-            return JSON.parse(localStorage.getItem('rooms') || '[]');
+        async function getRooms() {
+            if (window.DATA_SOURCE === "localstorage") {
+                return JSON.parse(localStorage.getItem('rooms') || '[]');
+            } else {
+                try {
+                    const response = await fetch('http://localhost:8000/api/rooms/');
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    const data = await response.json();
+                    return data.map(item => item.number);
+                } catch (error) {
+                    console.error('Ошибка при загрузке аудиторий:', error);
+                    return [];
+                }
+            }
         }
-        function saveRooms(rooms) {
-            localStorage.setItem('rooms', JSON.stringify(rooms));
+        async function saveRoom(number) {
+            if (window.DATA_SOURCE === "localstorage") {
+                let rooms = JSON.parse(localStorage.getItem('rooms') || '[]');
+                rooms.push(number);
+                localStorage.setItem('rooms', JSON.stringify(rooms));
+            } else {
+                try {
+                    const response = await fetch('http://localhost:8000/api/rooms/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ number })
+                    });
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    const data = await response.json();
+                    console.log('Сохранено:', data);
+                } catch (error) {
+                    console.error('Ошибка при сохранении аудитории:', error);
+                }
+            }
         }
-        function renderRooms() {
+        async function deleteRoom(number) {
+            if (window.DATA_SOURCE === "localstorage") {
+                let rooms = JSON.parse(localStorage.getItem('rooms') || '[]');
+                rooms = rooms.filter(r => r !== number);
+                localStorage.setItem('rooms', JSON.stringify(rooms));
+                return rooms;
+            } else {
+                try {
+                    const response = await fetch(`http://localhost:8000/api/rooms/${encodeURIComponent(number)}/`, {
+                        method: 'DELETE'
+                    });
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    console.log('Аудитория удалена:', number);
+                    return await getRooms();
+                } catch (error) {
+                    console.error('Ошибка при удалении аудитории:', error);
+                    return await getRooms();
+                }
+            }
+        }
+        async function renderRooms(rooms = null) {
             const ul = document.getElementById('rooms-ul');
             ul.innerHTML = '';
-            getRooms().forEach(room => {
+            const currentRooms = rooms !== null ? rooms : await getRooms();
+            currentRooms.forEach(room => {
                 const li = document.createElement('li');
-                li.textContent = room;
+                li.innerHTML = `
+                    <span>${room}</span>
+                    <button class="delete-btn" data-room="${room}">×</button>
+                `;
                 ul.appendChild(li);
+                li.querySelector('.delete-btn').addEventListener('click', async () => {
+                    if (confirm(`Удалить аудиторию "${room}"?`)) {
+                        const updatedRooms = await deleteRoom(room);
+                        renderRooms(updatedRooms);
+                        updateModalRooms(updatedRooms);
+                    }
+                });
             });
         }
-        document.getElementById('add-room-form').addEventListener('submit', function(e) {
+        document.getElementById('add-room-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const input = document.getElementById('room-input');
             const value = input.value.trim();
             if (!value) return;
-            const rooms = getRooms();
+            const rooms = await getRooms();
             if (!rooms.includes(value)) {
-                rooms.push(value);
-                saveRooms(rooms);
-                renderRooms();
-                window.localStorage.setItem('rooms_updated', Date.now());
+                await saveRoom(value);
+                const updated = await getRooms();
+                renderRooms(updated);
+                updateModalRooms(updated);
+            } else {
+                alert('Аудитория уже существует!');
             }
             input.value = '';
         });
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'rooms') renderRooms();
+        function updateModalRooms(rooms) {
+            window.dispatchEvent(new CustomEvent('roomsUpdated', { detail: rooms }));
+        }
+        window.addEventListener('roomsUpdated', (e) => {
+            renderRooms(e.detail);
         });
         renderRooms();
     </script>

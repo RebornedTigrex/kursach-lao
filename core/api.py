@@ -33,7 +33,8 @@ class Classroom(Base):
 class Schedule(Base):
     __tablename__ = "schedules"
     id = Column(Integer, primary_key=True, index=True)
-    day_of_week = Column(Integer, nullable=False)  # 0 - понедельник, 6 - воскресенье
+    day_of_week = Column(Integer, nullable=False)
+    col = Column(Integer, nullable=False)
     start_time = Column(String, nullable=False)
     end_time = Column(String, nullable=False)
     subject_id = Column(Integer, ForeignKey("subjects.id"))
@@ -225,7 +226,7 @@ def get_schedule(week_start: str = Query(...), group_id: int = 1):
             result.append({
                 "id": s.id,
                 "row": s.day_of_week,
-                "col": 1,
+                "col": s.col,
                 "subject": s.subject.name if s.subject else "",
                 "room": s.classroom.number if s.classroom else "",
                 "teacher": s.teacher.full_name if s.teacher else "",
@@ -244,6 +245,7 @@ def post_schedule(data: dict):
         room = db.query(Classroom).filter_by(number=data.get("room")).first()
         sched = Schedule(
             day_of_week=data.get("row"),
+            col=data.get("col"),
             start_time="09:00",
             end_time="10:30",
             subject_id=subject.id if subject else None,
@@ -264,7 +266,7 @@ def post_schedule(data: dict):
 def delete_schedule(week_start: str = Query(...), row: int = Query(...), col: int = Query(...)):
     db = SessionLocal()
     try:
-        sched = db.query(Schedule).filter_by(day_of_week=row).first()
+        sched = db.query(Schedule).filter_by(day_of_week=row, col=col).first()
         if sched:
             db.delete(sched)
             db.commit()

@@ -29,7 +29,7 @@ def run_frontend():
 def open_browser():
     logger.info("Открытие браузера...")
     time.sleep(2)  # Даём время на запуск серверов
-    webbrowser.open("http://127.0.0.1:3000/schedule.html", 0)
+    webbrowser.open("http://127.0.0.1:3000/pages/schedule.html", 0)
 
 
 def signal_handler(sig, frame):

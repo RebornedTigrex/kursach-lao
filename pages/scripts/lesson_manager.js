@@ -75,9 +75,12 @@ const LessonManager = {
     },
 
     // Открыть модальное окно для ячейки
-    openModal(cell) {
+    async openModal(cell) {
         this.currentCell = cell;
         this.currentKey = this.getCellKey(cell);
+
+        // Заполнить select'ы актуальными значениями из БД
+        await updateModalSelects();
 
         // Заполнить select'ы текущими значениями
         let lesson = {};
@@ -154,59 +157,73 @@ const LessonManager = {
         });
     },
 
-    // Методы для интеграции с БД (пример)
+    // Методы для интеграции с БД
     async loadFromDB(weekStartISO) {
-        // Получить расписание с backend
         try {
             const resp = await fetch(`http://localhost:8000/api/schedule/?week_start=${weekStartISO}`);
             const data = await resp.json();
-            // Очищаем все ячейки
+            // Сохраняем данные в lessons по ключу, чтобы renderLessons мог их отрисовать
+            this.lessons = {};
+            // Очищаем все lessonData
             this.tbody.querySelectorAll('.lesson').forEach(cell => {
-                cell.innerHTML = `<div class="lesson-content"></div>`;
                 cell._lessonData = undefined;
             });
-            // Заполняем ячейки
             data.forEach(item => {
-                // item должен содержать row, col, subject, room, teacher
                 const row = item.row, col = item.col;
+                // Ключ как в renderLessons
+                const key = `${weekStartISO}_${row}_${col}`;
+                this.lessons[key] = {
+                    subject: item.subject,
+                    room: item.room,
+                    teacher: item.teacher
+                };
+                // Для открытия модального окна с данными
                 const cell = this.tbody.rows[row]?.cells[col];
-                if (cell) {
-                    let html = '';
-                    if (item.subject) html += `<div><b>Предмет:</b> ${item.subject}</div>`;
-                    if (item.room) html += `<div><b>Аудитория:</b> ${item.room}</div>`;
-                    if (item.teacher) html += `<div><b>Преподаватель:</b> ${item.teacher}</div>`;
-                    cell.innerHTML = `<div class="lesson-content">${html}</div>`;
-                    cell._lessonData = item;
-                }
+                if (cell) cell._lessonData = item;
             });
+            this.renderLessons(weekStartISO);
         } catch (e) {
             alert('Ошибка загрузки расписания с сервера');
         }
     },
+
     async saveToDB(cell, data) {
-        // row/col для идентификации ячейки
         const row = cell.parentElement.rowIndex;
         const col = cell.cellIndex;
-        const weekISO = window.weekManager?.getCurrentWeekStartISO();
-        await fetch('http://localhost:8000/api/schedule/', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                week_start: weekISO,
-                row, col,
-                ...data
-            })
-        });
+        const weekISO = window.weekManager?.getCurrentWeekStartISO() || 'unknown';
+        const key = `${weekISO}_${row}_${col}`;
+        try {
+            await fetch(`http://localhost:8000/api/schedule/${key}/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    subject: data.subject,
+                    room: data.room,
+                    teacher: data.teacher
+                })
+            });
+        } catch (e) {
+            alert('Ошибка сохранения данных на сервере');
+        }
     },
+
     async deleteFromDB(cell) {
         const row = cell.parentElement.rowIndex;
         const col = cell.cellIndex;
-        const weekISO = window.weekManager?.getCurrentWeekStartISO();
-        await fetch(`http://localhost:8000/api/schedule/?week_start=${weekISO}&row=${row}&col=${col}`, {
-            method: 'DELETE'
-        });
+        const weekISO = window.weekManager?.getCurrentWeekStartISO() || 'unknown';
+        const key = `${weekISO}_${row}_${col}`;
+        try {
+            await fetch(`http://localhost:8000/api/schedule/${key}/`, {
+                method: 'DELETE'
+            });
+        } catch (e) {
+            alert('Ошибка удаления данных с сервера');
+        }
     },
 
+    // Локальное хранилище
     saveToStorage() {
         localStorage.setItem('lessons', JSON.stringify(this.lessons));
     },
@@ -215,8 +232,9 @@ const LessonManager = {
         const data = localStorage.getItem('lessons');
         if (data) {
             this.lessons = JSON.parse(data);
+            this.renderLessons(window.weekManager?.getCurrentWeekStartISO());
         }
     }
 };
 
-// После построения таблицы вызовите LessonManager.init();
+LessonManager.init();

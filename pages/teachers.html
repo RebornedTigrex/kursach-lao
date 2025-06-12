@@ -6,59 +6,116 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-
-
-
 <body>
-    <script src="../scripts/sidebar.js"></script>
+    <script src="scripts/sidebar.js"></script>
     <script>
-        // Индекс активного пункта: 0 - расписание, 1 - предметы, 2 - преподаватели, 3 - аудитории, 4 - настройки
-        insertSidebar(2); // Например, для страницы предметов
+        insertSidebar(2); // Для страницы преподавателей
     </script>
-
     <div class="entity-list">
         <h2>Список преподавателей</h2>
-        <ul id="teachers-list"></ul>
-        <form id="add-teacher-form">
-            <input type="text" id="teacher-name" placeholder="Введите ФИО преподавателя" required>
+        <ul id="teachers-ul"></ul>
+        <form id="add-teacher-form" autocomplete="off">
+            <input type="text" id="teacher-input" placeholder="ФИО преподавателя" required>
             <button type="submit">Добавить</button>
         </form>
     </div>
-
-    <script src="/scripts/entity_select_updater.js"></script>
-    
     <script>
-        function getTeachers() {
-            return JSON.parse(localStorage.getItem('teachers') || '[]');
+        async function getTeachers() {
+            if (window.DATA_SOURCE === "localstorage") {
+                return JSON.parse(localStorage.getItem('teachers') || '[]');
+            } else {
+                try {
+                    const response = await fetch('http://localhost:8000/api/teachers/');
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    const data = await response.json();
+                    return data.map(item => item.full_name);
+                } catch (error) {
+                    console.error('Ошибка при загрузке преподавателей:', error);
+                    return [];
+                }
+            }
         }
-        function saveTeachers(teachers) {
-            localStorage.setItem('teachers', JSON.stringify(teachers));
+        async function saveTeacher(name) {
+            if (window.DATA_SOURCE === "localstorage") {
+                let teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
+                teachers.push(name);
+                localStorage.setItem('teachers', JSON.stringify(teachers));
+            } else {
+                try {
+                    const response = await fetch('http://localhost:8000/api/teachers/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ full_name: name })
+                    });
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    const data = await response.json();
+                    console.log('Сохранено:', data);
+                } catch (error) {
+                    console.error('Ошибка при сохранении преподавателя:', error);
+                }
+            }
         }
-        function renderTeachers() {
+        async function deleteTeacher(name) {
+            if (window.DATA_SOURCE === "localstorage") {
+                let teachers = JSON.parse(localStorage.getItem('teachers') || '[]');
+                teachers = teachers.filter(t => t !== name);
+                localStorage.setItem('teachers', JSON.stringify(teachers));
+                return teachers;
+            } else {
+                try {
+                    const response = await fetch(`http://localhost:8000/api/teachers/${encodeURIComponent(name)}/`, {
+                        method: 'DELETE'
+                    });
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    console.log('Преподаватель удалён:', name);
+                    return await getTeachers();
+                } catch (error) {
+                    console.error('Ошибка при удалении преподавателя:', error);
+                    return await getTeachers();
+                }
+            }
+        }
+        async function renderTeachers(teachers = null) {
             const ul = document.getElementById('teachers-ul');
             ul.innerHTML = '';
-            getTeachers().forEach(teacher => {
+            const currentTeachers = teachers !== null ? teachers : await getTeachers();
+            currentTeachers.forEach(teacher => {
                 const li = document.createElement('li');
-                li.textContent = teacher;
+                li.innerHTML = `
+                    <span>${teacher}</span>
+                    <button class="delete-btn" data-teacher="${teacher}">×</button>
+                `;
                 ul.appendChild(li);
+                li.querySelector('.delete-btn').addEventListener('click', async () => {
+                    if (confirm(`Удалить преподавателя "${teacher}"?`)) {
+                        const updatedTeachers = await deleteTeacher(teacher);
+                        renderTeachers(updatedTeachers);
+                        updateModalTeachers(updatedTeachers);
+                    }
+                });
             });
         }
-        document.getElementById('add-teacher-form').addEventListener('submit', function(e) {
+        document.getElementById('add-teacher-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const input = document.getElementById('teacher-input');
             const value = input.value.trim();
             if (!value) return;
-            const teachers = getTeachers();
+            const teachers = await getTeachers();
             if (!teachers.includes(value)) {
-                teachers.push(value);
-                saveTeachers(teachers);
-                renderTeachers();
-                window.localStorage.setItem('teachers_updated', Date.now());
+                await saveTeacher(value);
+                const updated = await getTeachers();
+                renderTeachers(updated);
+                updateModalTeachers(updated);
+            } else {
+                alert('Преподаватель уже существует!');
             }
             input.value = '';
         });
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'teachers') renderTeachers();
+        function updateModalTeachers(teachers) {
+            window.dispatchEvent(new CustomEvent('teachersUpdated', { detail: teachers }));
+        }
+        window.addEventListener('teachersUpdated', (e) => {
+            renderTeachers(e.detail);
         });
         renderTeachers();
     </script>
