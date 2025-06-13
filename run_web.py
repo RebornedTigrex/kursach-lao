@@ -23,13 +23,13 @@ def run_backend():
 def run_frontend():
     global frontend_process
     logger.info("Запуск фронтенда (HTTP-сервер)...")
-    frontend_process = subprocess.Popen(["python", "-m", "http.server", "3000"], cwd="pages")
+    frontend_process = subprocess.Popen(["python", "-m", "http.server", "3000", "--bind", "127.0.0.1"], cwd="pages")
     frontend_process.wait()  # Блокируем поток до завершения процесса
 
 def open_browser():
     logger.info("Открытие браузера...")
     time.sleep(2)  # Даём время на запуск серверов
-    webbrowser.open("http://127.0.0.1:3000/pages/schedule.html", 0)
+    webbrowser.open("http://127.0.0.1:3000/schedule.html", 0)
 
 
 def signal_handler(sig, frame):
