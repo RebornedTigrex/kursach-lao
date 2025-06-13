@@ -80,6 +80,63 @@
     <script src="../scripts/entity_select_updater.js"></script>
     <script src="../scripts/lesson_manager.js"></script>
 
+    <script type="module">
+        import StorageSync from '../scripts/storageSync.js';
+        // Глобальные хранилища для использования в других скриптах
+        window.subjectStorage = new StorageSync('subjects', 'http://localhost:8000/api/subjects/');
+        window.roomStorage = new StorageSync('rooms', 'http://localhost:8000/api/rooms/');
+        window.teacherStorage = new StorageSync('teachers', 'http://localhost:8000/api/teachers/');
+
+        // Функция для обновления селекторов в модальном окне
+        function updateModalSelectors() {
+            const subjectSelect = document.querySelector('.subject-select');
+            const roomSelect = document.querySelector('.room-select');
+            const teacherSelect = document.querySelector('.teacher-select');
+            if (subjectSelect) {
+                subjectSelect.innerHTML = '<option value="">-- Выберите предмет --</option>';
+                window.subjectStorage.getAll().forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item;
+                    opt.textContent = item;
+                    subjectSelect.appendChild(opt);
+                });
+            }
+            if (roomSelect) {
+                roomSelect.innerHTML = '<option value="">-- Выберите аудиторию --</option>';
+                window.roomStorage.getAll().forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item;
+                    opt.textContent = item;
+                    roomSelect.appendChild(opt);
+                });
+            }
+            if (teacherSelect) {
+                teacherSelect.innerHTML = '<option value="">-- Выберите преподавателя --</option>';
+                window.teacherStorage.getAll().forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item;
+                    opt.textContent = item;
+                    teacherSelect.appendChild(opt);
+                });
+            }
+        }
+
+        // Обновлять селекторы при открытии модального окна
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.lesson')) {
+                setTimeout(updateModalSelectors, 0);
+            }
+        });
+        // Также обновлять при изменении localStorage
+        window.addEventListener('storage', function(e) {
+            if (["subjects", "rooms", "teachers"].includes(e.key)) {
+                updateModalSelectors();
+            }
+        });
+        // Первичная инициализация
+        updateModalSelectors();
+    </script>
+
     <script>
         window.DATA_SOURCE = "localstorage" // localstorage || sql
         // Обработчики событий
@@ -92,8 +149,6 @@
             window.weekManager = new WeekManager('.current-week');
             LessonManager.init();
             LessonManager.renderLessons();
-
-           
         });
     </script>
     

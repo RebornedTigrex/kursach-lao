@@ -1,3 +1,6 @@
+// Класс для работы с ячейками пар
+
+
 // Глобальная переменная для выбора источника данных: "localstorage" или "sql"
 window.DATA_SOURCE = window.DATA_SOURCE || "localstorage"; // или "sql"
 
@@ -151,59 +154,6 @@ const LessonManager = {
             } else {
                 cell.innerHTML = `<div class="lesson-content"></div>`;
             }
-        });
-    },
-
-    // Методы для интеграции с БД (пример)
-    async loadFromDB(weekStartISO) {
-        // Получить расписание с backend
-        try {
-            const resp = await fetch(`http://localhost:8000/api/schedule/?week_start=${weekStartISO}`);
-            const data = await resp.json();
-            // Очищаем все ячейки
-            this.tbody.querySelectorAll('.lesson').forEach(cell => {
-                cell.innerHTML = `<div class="lesson-content"></div>`;
-                cell._lessonData = undefined;
-            });
-            // Заполняем ячейки
-            data.forEach(item => {
-                // item должен содержать row, col, subject, room, teacher
-                const row = item.row, col = item.col;
-                const cell = this.tbody.rows[row]?.cells[col];
-                if (cell) {
-                    let html = '';
-                    if (item.subject) html += `<div><b>Предмет:</b> ${item.subject}</div>`;
-                    if (item.room) html += `<div><b>Аудитория:</b> ${item.room}</div>`;
-                    if (item.teacher) html += `<div><b>Преподаватель:</b> ${item.teacher}</div>`;
-                    cell.innerHTML = `<div class="lesson-content">${html}</div>`;
-                    cell._lessonData = item;
-                }
-            });
-        } catch (e) {
-            alert('Ошибка загрузки расписания с сервера');
-        }
-    },
-    async saveToDB(cell, data) {
-        // row/col для идентификации ячейки
-        const row = cell.parentElement.rowIndex;
-        const col = cell.cellIndex;
-        const weekISO = window.weekManager?.getCurrentWeekStartISO();
-        await fetch('http://localhost:8000/api/schedule/', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                week_start: weekISO,
-                row, col,
-                ...data
-            })
-        });
-    },
-    async deleteFromDB(cell) {
-        const row = cell.parentElement.rowIndex;
-        const col = cell.cellIndex;
-        const weekISO = window.weekManager?.getCurrentWeekStartISO();
-        await fetch(`http://localhost:8000/api/schedule/?week_start=${weekISO}&row=${row}&col=${col}`, {
-            method: 'DELETE'
         });
     },
 

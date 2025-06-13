@@ -6,71 +6,62 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
     <script src="../scripts/sidebar.js"></script>
-    <script>
-        // Индекс активного пункта: 0 - расписание, 1 - предметы, 2 - преподаватели, 3 - аудитории, 4 - настройки
-        insertSidebar(1); // Для страницы предметов
+    <script type="module">
+        import StorageSync from '../scripts/storageSync.js';
+        window.subjectStorage = new StorageSync('subjects', 'http://localhost:8000/api/subjects/');
+        insertSidebar(1);
     </script>
-    <!-- Основное содержимое страницы -->
-
     <div class="entity-list">
         <h2>Список предметов</h2>
-        <ul id="subjects-ul"></ul>
+        <div id="subjects-list-container"></div>
         <form id="add-subject-form" autocomplete="off">
             <input type="text" id="subject-input" placeholder="Новый предмет" required>
             <button type="submit">Добавить</button>
         </form>
     </div>
-
-    <script>
-        // --- Работа с localStorage (или замените на fetch к backend) ---
-        function getSubjects() {
-            return JSON.parse(localStorage.getItem('subjects') || '[]');
-        }
-        function saveSubjects(subjects) {
-            localStorage.setItem('subjects', JSON.stringify(subjects));
-        }
-
-        // --- Рендер списка ---
+    <script type="module">
+        import StorageSync from '../scripts/storageSync.js';
+        const subjectStorage = new StorageSync('subjects', 'http://localhost:8000/api/subjects/');
         function renderSubjects() {
-            const ul = document.getElementById('subjects-ul');
-            ul.innerHTML = '';
-            getSubjects().forEach(subject => {
+            const container = document.getElementById('subjects-list-container');
+            const items = subjectStorage.getAll();
+            container.innerHTML = '';
+            if (items.length === 0) {
+                container.textContent = 'Нет предметов';
+                return;
+            }
+            const ul = document.createElement('ul');
+            items.forEach((subject, idx) => {
                 const li = document.createElement('li');
                 li.textContent = subject;
+                const delBtn = document.createElement('button');
+                delBtn.textContent = 'Удалить';
+                delBtn.onclick = () => {
+                    subjectStorage.remove(idx);
+                    renderSubjects();
+                };
+                li.appendChild(delBtn);
                 ul.appendChild(li);
             });
+            container.appendChild(ul);
         }
-
-        // --- Добавление предмета ---
         document.getElementById('add-subject-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const input = document.getElementById('subject-input');
             const value = input.value.trim();
             if (!value) return;
-            const subjects = getSubjects();
-            if (!subjects.includes(value)) {
-                subjects.push(value);
-                saveSubjects(subjects);
+            const items = subjectStorage.getAll();
+            if (!items.includes(value)) {
+                subjectStorage.add(value);
                 renderSubjects();
-                updateModalSubjects(subjects);
             }
             input.value = '';
         });
-
-        // --- Для интеграции с модальным меню на главной странице ---
-        function updateModalSubjects(subjects) {
-            window.localStorage.setItem('subjects_updated', Date.now());
-        }
-
-        // --- Слушаем обновления из других вкладок/окон ---
         window.addEventListener('storage', function(e) {
             if (e.key === 'subjects') renderSubjects();
         });
-
-        // --- Инициализация ---
         renderSubjects();
     </script>
 </body>

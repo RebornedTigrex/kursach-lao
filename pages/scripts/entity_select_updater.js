@@ -5,6 +5,48 @@
  * - Преподаватели (teachers)
  */
 
+// Импорт StorageSync для использования в этом модуле
+import StorageSync from './storageSync.js';
+
+// Универсальные хранилища для всех сущностей
+const subjectStorage = new StorageSync('subjects', 'http://localhost:8000/api/subjects/');
+const roomStorage = new StorageSync('rooms', 'http://localhost:8000/api/rooms/');
+const teacherStorage = new StorageSync('teachers', 'http://localhost:8000/api/teachers/');
+
+// Универсальный рендер списка с кнопками удаления
+function renderEntityList(containerSelector, storageKey, placeholder) {
+    const container = document.querySelector(containerSelector);
+    if (!container) return;
+    let items = [];
+    if (storageKey === 'subjects') items = subjectStorage.getAll();
+    if (storageKey === 'rooms') items = roomStorage.getAll();
+    if (storageKey === 'teachers') items = teacherStorage.getAll();
+    container.innerHTML = '';
+    if (items.length === 0 && placeholder) {
+        const p = document.createElement('p');
+        p.textContent = placeholder;
+        container.appendChild(p);
+    }
+    const ul = document.createElement('ul');
+    items.forEach((item, idx) => {
+        const li = document.createElement('li');
+        li.textContent = typeof item === 'string' ? item : (item.name || item.number || item.full_name || '');
+        // Кнопка удаления
+        const delBtn = document.createElement('button');
+        delBtn.textContent = 'Удалить';
+        delBtn.className = 'delete-entity-btn';
+        delBtn.onclick = function() {
+            if (storageKey === 'subjects') subjectStorage.remove(idx);
+            if (storageKey === 'rooms') roomStorage.remove(idx);
+            if (storageKey === 'teachers') teacherStorage.remove(idx);
+            renderEntityList(containerSelector, storageKey, placeholder);
+        };
+        li.appendChild(delBtn);
+        ul.appendChild(li);
+    });
+    container.appendChild(ul);
+}
+
 async function updateEntitySelect(selector, storageKey, placeholder) {
     const select = document.querySelector(selector);
     if (!select) return;
@@ -19,21 +61,9 @@ async function updateEntitySelect(selector, storageKey, placeholder) {
         select.appendChild(opt);
     }
     let items = [];
-    if (window.DATA_SOURCE === "localstorage") {
-        items = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    } else {
-        // Получаем значения из backend
-        let url = '';
-        if (storageKey === 'subjects') url = 'http://localhost:8000/api/subjects/';
-        if (storageKey === 'rooms') url = 'http://localhost:8000/api/rooms/';
-        if (storageKey === 'teachers') url = 'http://localhost:8000/api/teachers/';
-        try {
-            const resp = await fetch(url);
-            items = await resp.json();
-        } catch (e) {
-            items = [];
-        }
-    }
+    if (storageKey === 'subjects') items = subjectStorage.getAll();
+    if (storageKey === 'rooms') items = roomStorage.getAll();
+    if (storageKey === 'teachers') items = teacherStorage.getAll();
     items.forEach(item => {
         const option = document.createElement('option');
         option.value = typeof item === 'string' ? item : (item.name || item.number || item.full_name || '');

@@ -6,51 +6,56 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-
-
-
 <body>
     <script src="../scripts/sidebar.js"></script>
-    <script>
-        // Индекс активного пункта: 0 - расписание, 1 - предметы, 2 - преподаватели, 3 - аудитории, 4 - настройки
-        insertSidebar(2); // Например, для страницы предметов
+    <script type="module">
+        import StorageSync from '../scripts/storageSync.js';
+        window.teacherStorage = new StorageSync('teachers', 'http://localhost:8000/api/teachers/');
+        insertSidebar(2);
     </script>
-
     <div class="entity-list">
         <h2>Список преподавателей</h2>
-        <ul id="teachers-ul"></ul>
+        <div id="teachers-list-container"></div>
         <form id="add-teacher-form" autocomplete="off">
             <input type="text" id="teacher-input" placeholder="Новый преподаватель" required>
             <button type="submit">Добавить</button>
         </form>
     </div>
-    <script>
-        function getTeachers() {
-            return JSON.parse(localStorage.getItem('teachers') || '[]');
-        }
-        function saveTeachers(teachers) {
-            localStorage.setItem('teachers', JSON.stringify(teachers));
-        }
+    <script type="module">
+        import StorageSync from '../scripts/storageSync.js';
+        const teacherStorage = new StorageSync('teachers', 'http://localhost:8000/api/teachers/');
         function renderTeachers() {
-            const ul = document.getElementById('teachers-ul');
-            ul.innerHTML = '';
-            getTeachers().forEach(teacher => {
+            const container = document.getElementById('teachers-list-container');
+            const items = teacherStorage.getAll();
+            container.innerHTML = '';
+            if (items.length === 0) {
+                container.textContent = 'Нет преподавателей';
+                return;
+            }
+            const ul = document.createElement('ul');
+            items.forEach((teacher, idx) => {
                 const li = document.createElement('li');
                 li.textContent = teacher;
+                const delBtn = document.createElement('button');
+                delBtn.textContent = 'Удалить';
+                delBtn.onclick = () => {
+                    teacherStorage.remove(idx);
+                    renderTeachers();
+                };
+                li.appendChild(delBtn);
                 ul.appendChild(li);
             });
+            container.appendChild(ul);
         }
         document.getElementById('add-teacher-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const input = document.getElementById('teacher-input');
             const value = input.value.trim();
             if (!value) return;
-            const teachers = getTeachers();
-            if (!teachers.includes(value)) {
-                teachers.push(value);
-                saveTeachers(teachers);
+            const items = teacherStorage.getAll();
+            if (!items.includes(value)) {
+                teacherStorage.add(value);
                 renderTeachers();
-                window.localStorage.setItem('teachers_updated', Date.now());
             }
             input.value = '';
         });
