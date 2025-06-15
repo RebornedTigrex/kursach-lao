@@ -9,9 +9,9 @@
 import StorageSync from './storageSync.js';
 
 // Универсальные хранилища для всех сущностей
-const subjectStorage = new StorageSync('subjects', 'http://localhost:8000/api/subjects/');
-const roomStorage = new StorageSync('rooms', 'http://localhost:8000/api/rooms/');
-const teacherStorage = new StorageSync('teachers', 'http://localhost:8000/api/teachers/');
+const subjectStorage = new StorageSync('subjects', 'http://127.0.0.1:8000/api/subjects/');
+const roomStorage = new StorageSync('rooms', 'http://127.0.0.1:8000/api/rooms/');
+const teacherStorage = new StorageSync('teachers', 'http://127.0.0.1:8000/api/teachers/');
 
 // Универсальный рендер списка с кнопками удаления
 function renderEntityList(containerSelector, storageKey, placeholder) {

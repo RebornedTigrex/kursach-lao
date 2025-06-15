@@ -83,9 +83,9 @@
     <script type="module">
         import StorageSync from '../scripts/storageSync.js';
         // Глобальные хранилища для использования в других скриптах
-        window.subjectStorage = new StorageSync('subjects', 'http://localhost:8000/api/subjects/');
-        window.roomStorage = new StorageSync('rooms', 'http://localhost:8000/api/rooms/');
-        window.teacherStorage = new StorageSync('teachers', 'http://localhost:8000/api/teachers/');
+        window.subjectStorage = new StorageSync('subjects', 'http://127.0.0.1:8000/api/subjects/');
+        window.roomStorage = new StorageSync('rooms', 'http://127.0.0.1:8000/api/rooms/');
+        window.teacherStorage = new StorageSync('teachers', 'http://127.0.0.1:8000/api/teachers/');
 
         // Функция для обновления селекторов в модальном окне
         function updateModalSelectors() {
@@ -138,7 +138,7 @@
     </script>
 
     <script>
-        window.DATA_SOURCE = "localstorage" // localstorage || sql
+        window.DATA_SOURCE = "localstorage" // localstorage || sql (Костыль оставшийся от 0.7)
         // Обработчики событий
         document.addEventListener('DOMContentLoaded', function() {
             // Индекс активного пункта: 0 - расписание, 1 - предметы, 2 - преподаватели, 3 - аудитории, 4 - настройки

@@ -17,7 +17,7 @@ frontend_process = None
 def run_backend():
     global backend_process
     logger.info("Запуск backend (FastAPI)...")
-    backend_process = subprocess.Popen(["uvicorn", "core.api:app", "--reload", "--port", "8000"])
+    backend_process = subprocess.Popen(["uvicorn", "core.api:app", "--host", "127.0.0.1", "--port", "8000"])
     backend_process.wait()  # Блокируем поток до завершения процесса
 
 def run_frontend():

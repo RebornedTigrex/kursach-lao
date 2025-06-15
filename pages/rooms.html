@@ -10,7 +10,7 @@
     <script src="../scripts/sidebar.js"></script>
     <script type="module">
         import StorageSync from '../scripts/storageSync.js';
-        window.roomStorage = new StorageSync('rooms', 'http://localhost:8000/api/rooms/');
+        window.roomStorage = new StorageSync('rooms', 'http://127.0.0.1:8000/api/rooms/');
         insertSidebar(3);
     </script>
     <div class="entity-list">
@@ -23,7 +23,7 @@
     </div>
     <script type="module">
         import StorageSync from '../scripts/storageSync.js';
-        const roomStorage = new StorageSync('rooms', 'http://localhost:8000/api/rooms/');
+        const roomStorage = new StorageSync('rooms', 'http://127.0.0.1:8000/api/rooms/');
         function renderRooms() {
             const container = document.getElementById('rooms-list-container');
             const items = roomStorage.getAll();
