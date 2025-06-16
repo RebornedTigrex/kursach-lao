@@ -132,3 +132,63 @@ def delete_schedule(key: str = Query(...)):
         db.delete(sched)
         db.commit()
     return {"status": "ok"}
+
+@app.post("/api/subjects/")
+def post_subject(data: dict):
+    db = SessionLocal()
+    name = data.get("name")
+    if not name:
+        return {"status": "error", "msg": "name required"}
+    subject = Subject(name=name)
+    db.add(subject)
+    db.commit()
+    return {"status": "ok", "id": subject.id}
+
+@app.delete("/api/subjects/")
+def delete_subject(id: int = Query(...)):
+    db = SessionLocal()
+    subject = db.query(Subject).filter_by(id=id).first()
+    if subject:
+        db.delete(subject)
+        db.commit()
+    return {"status": "ok"}
+
+@app.post("/api/rooms/")
+def post_room(data: dict):
+    db = SessionLocal()
+    number = data.get("number")
+    if not number:
+        return {"status": "error", "msg": "number required"}
+    room = Classroom(number=number)
+    db.add(room)
+    db.commit()
+    return {"status": "ok", "id": room.id}
+
+@app.delete("/api/rooms/")
+def delete_room(id: int = Query(...)):
+    db = SessionLocal()
+    room = db.query(Classroom).filter_by(id=id).first()
+    if room:
+        db.delete(room)
+        db.commit()
+    return {"status": "ok"}
+
+@app.post("/api/teachers/")
+def post_teacher(data: dict):
+    db = SessionLocal()
+    full_name = data.get("full_name")
+    if not full_name:
+        return {"status": "error", "msg": "full_name required"}
+    teacher = Teacher(full_name=full_name)
+    db.add(teacher)
+    db.commit()
+    return {"status": "ok", "id": teacher.id}
+
+@app.delete("/api/teachers/")
+def delete_teacher(id: int = Query(...)):
+    db = SessionLocal()
+    teacher = db.query(Teacher).filter_by(id=id).first()
+    if teacher:
+        db.delete(teacher)
+        db.commit()
+    return {"status": "ok"}
