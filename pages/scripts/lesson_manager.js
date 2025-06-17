@@ -1,8 +1,5 @@
 // Класс для работы с ячейками пар
 
-// Глобальная переменная для выбора источника данных: "localstorage" или "sql"
-// window.DATA_SOURCE = window.DATA_SOURCE || "localstorage"; // или "sql"
-
 const LessonManager = {
     lessons: {}, // { 'YYYY-MM-DD_row_col': {subject, room, teacher} }
     tbody: null,
@@ -32,13 +29,8 @@ const LessonManager = {
         this.currentCell = null;
         this.currentKey = null;
 
-        // if (window.DATA_SOURCE === "localstorage") {
-            this.loadFromStorage();
-        // } else {
-        //     // При старте загружаем расписание с backend для текущей недели
-        //     this.loadFromDB(window.weekManager?.getCurrentWeekStartISO());
-        // }
-
+        this.loadFromStorage();
+   
         // Навешиваем обработчик на все ячейки расписания
         this.tbody.addEventListener('click', (e) => {
             const cell = e.target.closest('.lesson');
@@ -52,19 +44,12 @@ const LessonManager = {
 
         // Перерисовывать пары при смене недели
         document.addEventListener('weekChanged', (e) => {
-            // if (window.DATA_SOURCE === "localstorage") {
             this.renderLessons(e.detail.weekStartISO);
-            // } else {
-            //     this.loadFromDB(e.detail.weekStartISO);
-            // }
         });
 
         // Первичная отрисовка
-        // if (window.DATA_SOURCE === "localstorage") {
-            this.renderLessons(window.weekManager?.getCurrentWeekStartISO());
-        // } else {
-        //     this.loadFromDB(window.weekManager?.getCurrentWeekStartISO());
-        // }
+        this.renderLessons(window.weekManager?.getCurrentWeekStartISO());
+
     },
 
     // Генерация уникального ключа для ячейки (можно заменить на id из БД)
