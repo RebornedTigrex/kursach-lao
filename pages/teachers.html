@@ -24,22 +24,23 @@
     <script type="module">
         import StorageSync from '../scripts/storageSync.js';
         const teacherStorage = new StorageSync('teachers', 'http://127.0.0.1:8000/api/teachers/');
-        function renderTeachers() {
+        async function renderTeachers() {
             const container = document.getElementById('teachers-list-container');
-            const items = teacherStorage.getAll();
+            const items = await teacherStorage.getAll();
             container.innerHTML = '';
             if (items.length === 0) {
                 container.textContent = 'Нет преподавателей';
                 return;
             }
             const ul = document.createElement('ul');
-            items.forEach((teacher, idx) => {
+            console.log(items)
+            items.forEach(({id, full_name}) => {
                 const li = document.createElement('li');
-                li.textContent = teacher;
+                li.textContent = full_name;
                 const delBtn = document.createElement('button');
                 delBtn.textContent = 'Удалить';
-                delBtn.onclick = () => {
-                    teacherStorage.remove(idx);
+                delBtn.onclick = async () => {
+                    await teacherStorage.remove(id);
                     renderTeachers();
                 };
                 li.appendChild(delBtn);
@@ -47,16 +48,13 @@
             });
             container.appendChild(ul);
         }
-        document.getElementById('add-teacher-form').addEventListener('submit', function(e) {
+        document.getElementById('add-teacher-form').addEventListener('submit',async function(e) {
             e.preventDefault();
             const input = document.getElementById('teacher-input');
             const value = input.value.trim();
             if (!value) return;
-            const items = teacherStorage.getAll();
-            if (!items.includes(value)) {
-                teacherStorage.add(value);
-                renderTeachers();
-            }
+            await teacherStorage.add(value);
+            renderTeachers();
             input.value = '';
         });
         window.addEventListener('storage', function(e) {

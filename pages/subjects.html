@@ -24,22 +24,22 @@
     <script type="module">
         import StorageSync from '../scripts/storageSync.js';
         const subjectStorage = new StorageSync('subjects', 'http://127.0.0.1:8000/api/subjects/');
-        function renderSubjects() {
+        async function renderSubjects() {
             const container = document.getElementById('subjects-list-container');
-            const items = subjectStorage.getAll();
+            const items = await subjectStorage.getAll();
             container.innerHTML = '';
             if (items.length === 0) {
                 container.textContent = 'Нет предметов';
                 return;
             }
             const ul = document.createElement('ul');
-            items.forEach((subject, idx) => {
+            items.forEach(({id, name}) => {
                 const li = document.createElement('li');
-                li.textContent = subject;
+                li.textContent = name;
                 const delBtn = document.createElement('button');
                 delBtn.textContent = 'Удалить';
                 delBtn.onclick = () => {
-                    subjectStorage.remove(idx);
+                    subjectStorage.remove(id);
                     renderSubjects();
                 };
                 li.appendChild(delBtn);
@@ -47,16 +47,13 @@
             });
             container.appendChild(ul);
         }
-        document.getElementById('add-subject-form').addEventListener('submit', function(e) {
+        document.getElementById('add-subject-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const input = document.getElementById('subject-input');
             const value = input.value.trim();
             if (!value) return;
-            const items = subjectStorage.getAll();
-            if (!items.includes(value)) {
-                subjectStorage.add(value);
-                renderSubjects();
-            }
+            await subjectStorage.add(value);
+            renderSubjects();
             input.value = '';
         });
         window.addEventListener('storage', function(e) {

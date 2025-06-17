@@ -24,22 +24,22 @@
     <script type="module">
         import StorageSync from '../scripts/storageSync.js';
         const roomStorage = new StorageSync('rooms', 'http://127.0.0.1:8000/api/rooms/');
-        function renderRooms() {
+        async function renderRooms() {
             const container = document.getElementById('rooms-list-container');
-            const items = roomStorage.getAll();
+            const items = await roomStorage.getAll();
             container.innerHTML = '';
             if (items.length === 0) {
                 container.textContent = 'Нет аудиторий';
                 return;
             }
             const ul = document.createElement('ul');
-            items.forEach((room, idx) => {
+            items.forEach(({id, number}) => {
                 const li = document.createElement('li');
-                li.textContent = room;
+                li.textContent = number;
                 const delBtn = document.createElement('button');
                 delBtn.textContent = 'Удалить';
                 delBtn.onclick = () => {
-                    roomStorage.remove(idx);
+                    roomStorage.remove(id);
                     renderRooms();
                 };
                 li.appendChild(delBtn);
@@ -52,11 +52,8 @@
             const input = document.getElementById('room-input');
             const value = input.value.trim();
             if (!value) return;
-            const items = roomStorage.getAll();
-            if (!items.includes(value)) {
-                roomStorage.add(value);
-                renderRooms();
-            }
+            roomStorage.add(value);
+            renderRooms();
             input.value = '';
         });
         window.addEventListener('storage', function(e) {

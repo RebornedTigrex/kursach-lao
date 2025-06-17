@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
     <title>Расписание факультета</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
@@ -86,36 +86,42 @@
         window.subjectStorage = new StorageSync('subjects', 'http://127.0.0.1:8000/api/subjects/');
         window.roomStorage = new StorageSync('rooms', 'http://127.0.0.1:8000/api/rooms/');
         window.teacherStorage = new StorageSync('teachers', 'http://127.0.0.1:8000/api/teachers/');
+        window.sheduleStorage = new StorageSync("shedule", "http://127.0.0.1:8000/api/schedule/");
 
         // Функция для обновления селекторов в модальном окне
-        function updateModalSelectors() {
+        async function updateModalSelectors() {
             const subjectSelect = document.querySelector('.subject-select');
             const roomSelect = document.querySelector('.room-select');
             const teacherSelect = document.querySelector('.teacher-select');
             if (subjectSelect) {
                 subjectSelect.innerHTML = '<option value="">-- Выберите предмет --</option>';
-                window.subjectStorage.getAll().forEach(item => {
+                const items = await window.subjectStorage.getAll();
+                items.forEach(({id, name}) => {
                     const opt = document.createElement('option');
-                    opt.value = item;
-                    opt.textContent = item;
+                    opt.value = name;
+                    opt.textContent = name;
                     subjectSelect.appendChild(opt);
                 });
             }
             if (roomSelect) {
                 roomSelect.innerHTML = '<option value="">-- Выберите аудиторию --</option>';
-                window.roomStorage.getAll().forEach(item => {
+                const items = await window.roomStorage.getAll();
+                
+                items.forEach(({id,number}) => {
                     const opt = document.createElement('option');
-                    opt.value = item;
-                    opt.textContent = item;
+                    opt.value = number;
+                    opt.textContent = number;
                     roomSelect.appendChild(opt);
                 });
+                
             }
             if (teacherSelect) {
                 teacherSelect.innerHTML = '<option value="">-- Выберите преподавателя --</option>';
-                window.teacherStorage.getAll().forEach(item => {
+                const items = await window.teacherStorage.getAll();
+                items.forEach(({id, full_name})=> {
                     const opt = document.createElement('option');
-                    opt.value = item;
-                    opt.textContent = item;
+                    opt.value = full_name;
+                    opt.textContent = full_name;
                     teacherSelect.appendChild(opt);
                 });
             }
@@ -138,12 +144,10 @@
     </script>
 
     <script>
-        window.DATA_SOURCE = "localstorage" // localstorage || sql (Костыль оставшийся от 0.7)
         // Обработчики событий
         document.addEventListener('DOMContentLoaded', function() {
             // Индекс активного пункта: 0 - расписание, 1 - предметы, 2 - преподаватели, 3 - аудитории, 4 - настройки
             insertSidebar(0); // Для страницы предметов
-
 
             buildTimetable("09:00", 8); // 5 пар, начало в 09:00
             window.weekManager = new WeekManager('.current-week');

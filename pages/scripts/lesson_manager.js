@@ -1,8 +1,7 @@
 // Класс для работы с ячейками пар
 
-
 // Глобальная переменная для выбора источника данных: "localstorage" или "sql"
-window.DATA_SOURCE = window.DATA_SOURCE || "localstorage"; // или "sql"
+// window.DATA_SOURCE = window.DATA_SOURCE || "localstorage"; // или "sql"
 
 const LessonManager = {
     lessons: {}, // { 'YYYY-MM-DD_row_col': {subject, room, teacher} }
@@ -33,12 +32,12 @@ const LessonManager = {
         this.currentCell = null;
         this.currentKey = null;
 
-        if (window.DATA_SOURCE === "localstorage") {
+        // if (window.DATA_SOURCE === "localstorage") {
             this.loadFromStorage();
-        } else {
-            // При старте загружаем расписание с backend для текущей недели
-            this.loadFromDB(window.weekManager?.getCurrentWeekStartISO());
-        }
+        // } else {
+        //     // При старте загружаем расписание с backend для текущей недели
+        //     this.loadFromDB(window.weekManager?.getCurrentWeekStartISO());
+        // }
 
         // Навешиваем обработчик на все ячейки расписания
         this.tbody.addEventListener('click', (e) => {
@@ -53,19 +52,19 @@ const LessonManager = {
 
         // Перерисовывать пары при смене недели
         document.addEventListener('weekChanged', (e) => {
-            if (window.DATA_SOURCE === "localstorage") {
-                this.renderLessons(e.detail.weekStartISO);
-            } else {
-                this.loadFromDB(e.detail.weekStartISO);
-            }
+            // if (window.DATA_SOURCE === "localstorage") {
+            this.renderLessons(e.detail.weekStartISO);
+            // } else {
+            //     this.loadFromDB(e.detail.weekStartISO);
+            // }
         });
 
         // Первичная отрисовка
-        if (window.DATA_SOURCE === "localstorage") {
+        // if (window.DATA_SOURCE === "localstorage") {
             this.renderLessons(window.weekManager?.getCurrentWeekStartISO());
-        } else {
-            this.loadFromDB(window.weekManager?.getCurrentWeekStartISO());
-        }
+        // } else {
+        //     this.loadFromDB(window.weekManager?.getCurrentWeekStartISO());
+        // }
     },
 
     // Генерация уникального ключа для ячейки (можно заменить на id из БД)
@@ -84,11 +83,8 @@ const LessonManager = {
 
         // Заполнить select'ы текущими значениями
         let lesson = {};
-        if (window.DATA_SOURCE === "localstorage") {
-            lesson = this.lessons[this.currentKey] || {};
-        } else {
-            lesson = cell._lessonData || {};
-        }
+        lesson = this.lessons[this.currentKey] || {};
+
         this.subjectSelect.value = lesson.subject || '';
         this.roomSelect.value = lesson.room || '';
         this.teacherSelect.value = lesson.teacher || '';
@@ -103,40 +99,27 @@ const LessonManager = {
     },
 
     // Сохранить данные о паре
-    async saveLesson() {
+    saveLesson() {
         if (!this.currentKey) return;
         const data = {
             subject: this.subjectSelect.value,
             room: this.roomSelect.value,
             teacher: this.teacherSelect.value
         };
-        if (window.DATA_SOURCE === "localstorage") {
-            this.lessons[this.currentKey] = data;
-            this.saveToStorage();
-            this.renderLessons(window.weekManager?.getCurrentWeekStartISO());
-            this.closeModal();
-        } else {
-            // Отправить на backend
-            await this.saveToDB(this.currentCell, data);
-            await this.loadFromDB(window.weekManager?.getCurrentWeekStartISO());
-            this.closeModal();
-        }
+
+        this.lessons[this.currentKey] = data;
+        this.saveToStorage({[this.currentKey]: data});
+        this.renderLessons(window.weekManager?.getCurrentWeekStartISO());
+        this.closeModal();
     },
 
     // Очистить данные о паре
-    async clearLesson() {
+    clearLesson() {
         if (!this.currentKey) return;
-        if (window.DATA_SOURCE === "localstorage") {
-            delete this.lessons[this.currentKey];
-            this.saveToStorage();
-            this.renderLessons(window.weekManager?.getCurrentWeekStartISO());
-            this.closeModal();
-        } else {
-            // Удалить с backend
-            await this.deleteFromDB(this.currentCell);
-            await this.loadFromDB(window.weekManager?.getCurrentWeekStartISO());
-            this.closeModal();
-        }
+        delete this.lessons[this.currentKey];
+        window.sheduleStorage.remove(this.currentKey)
+        this.renderLessons(window.weekManager?.getCurrentWeekStartISO());
+        this.closeModal();
     },
 
     // Отрисовать пары в таблице
@@ -157,16 +140,15 @@ const LessonManager = {
         });
     },
 
-    saveToStorage() {
-        localStorage.setItem('lessons', JSON.stringify(this.lessons));
+    async saveToStorage(lesson) {
+        await window.sheduleStorage.add(lesson)
     },
 
-    loadFromStorage() {
-        const data = localStorage.getItem('lessons');
+    async loadFromStorage() {
+        const data = await window.sheduleStorage.getAll()
+        console.log(data)
         if (data) {
-            this.lessons = JSON.parse(data);
+            this.lessons = data;
         }
     }
 };
-
-// После построения таблицы вызовите LessonManager.init();
