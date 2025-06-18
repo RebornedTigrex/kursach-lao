@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from fastapi.testclient import TestClient
 from core.api import app, SessionLocal, Subject, Teacher, Classroom, Schedule
 import json
@@ -27,7 +30,7 @@ def test_subjects_crud():
     r = client.request(
         "DELETE",
         "/api/subjects/",
-        json={"id": subject_id}
+        json=subject_id
     )
     assert r.status_code == 200
 
@@ -41,13 +44,13 @@ def test_rooms_crud():
     r = client.request(
         "DELETE",
         "/api/rooms/",
-        json={"id": room_id}
+        json=room_id
     )
     assert r.status_code == 200
 
 def test_teachers_crud():
     r = client.post("/api/teachers/", json="Иванов И.И.")
-    assert r.status_code == 200 
+    assert r.status_code == 200
     teacher_id = r.json()["id"]
     r = client.get("/api/teachers/")
     assert r.status_code == 200
@@ -55,9 +58,9 @@ def test_teachers_crud():
     r = client.request(
         "DELETE",
         "/api/teachers/",
-        json={"id": teacher_id}
+        json=teacher_id
     )
-    assert r.status_code == 200 
+    assert r.status_code == 200
 
 def test_schedule_crud():
     # Добавим сущности
@@ -74,7 +77,7 @@ def test_schedule_crud():
         }
     }
     r = client.post("/api/schedule/", json=data)
-    assert r.status_code == 200 
+    assert r.status_code == 200
     # Проверим получение
     r = client.get("/api/schedule/")
     assert r.status_code == 200
@@ -87,6 +90,6 @@ def test_schedule_crud():
     )
     assert r.status_code == 200
     # Очистим сущности
-    client.request("DELETE", "/api/subjects/", json={"id": subj})
-    client.request("DELETE", "/api/rooms/", json={"id": room})
-    client.request("DELETE", "/api/teachers/", json={"id": teacher})
+    client.request("DELETE", "/api/subjects/", json=subj)
+    client.request("DELETE", "/api/rooms/", json=room)
+    client.request("DELETE", "/api/teachers/", json=teacher)
