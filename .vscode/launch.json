@@ -1,0 +1,11 @@
+{
+  "configurations": [
+    {
+      "name": "Python",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "C:\\Users\\Tigrex\\Documents\\GitHub\\kursach-lao\\run_web.py",
+      "console": "integratedTerminal"
+    }
+  ]
+}

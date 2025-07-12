@@ -56,26 +56,161 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # ==================== API ====================
 
-@app.get("/api/subjects/")
+# Декоратор для явной поддержки OPTIONS
+def allow_options(route):
+    async def options_handler(request):
+        return {"message": "OPTIONS allowed"}
+    route.options = options_handler
+    return route
+
+
+class EntityCreate(BaseModel):
+    name: str = None
+    number: str = None
+    full_name: str = None
+
+# ==================== API: Subjects ====================
+@app.get("/api/subjects/", response_model=list)
+@allow_options
 def get_subjects():
     db = SessionLocal()
-    subjects = db.query(Subject).all()
-    return [{"id": s.id, "name": s.name} for s in subjects]
+    try:
+        subjects = db.query(Subject).all()
+        return [{"id": s.id, "name": s.name} for s in subjects]
+    finally:
+        db.close()
 
-@app.get("/api/rooms/")
+@app.post("/api/subjects/")
+@allow_options
+def add_subject(data: EntityCreate):
+    db = SessionLocal()
+    try:
+        if not data.name:
+            raise HTTPException(status_code=400, detail="Subject name is required")
+        subject = Subject(name=data.name)
+        db.add(subject)
+        db.commit()
+        db.refresh(subject)
+        return {"id": subject.id, "name": subject.name}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to add subject: {str(e)}")
+    finally:
+        db.close()
+
+@app.delete("/api/subjects/{name}/")
+@allow_options
+def delete_subject(name: str):
+    db = SessionLocal()
+    try:
+        subject = db.query(Subject).filter_by(name=name).first()
+        if not subject:
+            raise HTTPException(status_code=404, detail="Subject not found")
+        db.delete(subject)
+        db.commit()
+        return {"status": "ok"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to delete subject: {str(e)}")
+    finally:
+        db.close()
+
+# ==================== API: Rooms ====================
+@app.get("/api/rooms/", response_model=list)
+@allow_options
 def get_rooms():
     db = SessionLocal()
-    rooms = db.query(Classroom).all()
-    return [{"id": r.id, "number": r.number} for r in rooms]
+    try:
+        rooms = db.query(Classroom).all()
+        return [{"id": r.id, "number": r.number} for r in rooms]
+    finally:
+        db.close()
 
-@app.get("/api/teachers/")
+@app.post("/api/rooms/")
+@allow_options
+def add_room(data: EntityCreate):
+    db = SessionLocal()
+    try:
+        if not data.number:
+            raise HTTPException(status_code=400, detail="Room number is required")
+        room = Classroom(number=data.number)
+        db.add(room)
+        db.commit()
+        db.refresh(room)
+        return {"id": room.id, "number": room.number}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to add room: {str(e)}")
+    finally:
+        db.close()
+
+@app.delete("/api/rooms/{number}/")
+@allow_options
+def delete_room(number: str):
+    db = SessionLocal()
+    try:
+        room = db.query(Classroom).filter_by(number=number).first()
+        if not room:
+            raise HTTPException(status_code=404, detail="Room not found")
+        db.delete(room)
+        db.commit()
+        return {"status": "ok"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to delete room: {str(e)}")
+    finally:
+        db.close()
+
+# ==================== API: Teachers ====================
+@app.get("/api/teachers/", response_model=list)
+@allow_options
 def get_teachers():
     db = SessionLocal()
-    teachers = db.query(Teacher).all()
-    return [{"id": t.id, "full_name": t.full_name} for t in teachers]
+    try:
+        teachers = db.query(Teacher).all()
+        return [{"id": t.id, "full_name": t.full_name} for t in teachers]
+    finally:
+        db.close()
 
+@app.post("/api/teachers/")
+@allow_options
+def add_teacher(data: EntityCreate):
+    db = SessionLocal()
+    try:
+        if not data.full_name:
+            raise HTTPException(status_code=400, detail="Teacher full name is required")
+        teacher = Teacher(full_name=data.full_name)
+        db.add(teacher)
+        db.commit()
+        db.refresh(teacher)
+        return {"id": teacher.id, "full_name": teacher.full_name}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to add teacher: {str(e)}")
+    finally:
+        db.close()
+
+@app.delete("/api/teachers/{full_name}/")
+@allow_options
+def delete_teacher(full_name: str):
+    db = SessionLocal()
+    try:
+        teacher = db.query(Teacher).filter_by(full_name=full_name).first()
+        if not teacher:
+            raise HTTPException(status_code=404, detail="Teacher not found")
+        db.delete(teacher)
+        db.commit()
+        return {"status": "ok"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to delete teacher: {str(e)}")
+    finally:
+        db.close()
+
+# ==================== API: Schedule ====================
 @app.get("/api/schedule/")
 def get_schedule():
     db = SessionLocal()
@@ -94,6 +229,7 @@ def get_schedule():
     return result
 
 @app.post("/api/schedule/")
+@allow_options
 def post_schedule(data: dict):
     print(data)
     db = SessionLocal()
