@@ -9,13 +9,14 @@ import subprocess
 BASE_URL = "http://127.0.0.1:3000/pages/subjects.html"
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope = "module")
 def driver():
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')  # Без открытия окна браузера
-    driver = webdriver.Chrome(options=options)
+    driver = webdriver.Chrome(options = options)
     yield driver
     driver.quit()
+
 
 def test_subjects_add_and_delete(driver):
     driver.get(BASE_URL)
