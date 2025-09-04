@@ -2,3 +2,5 @@
 */.vscode/
 */.venv/
 database.db
+.vscode
+.idea
