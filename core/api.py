@@ -45,14 +45,6 @@ class Schedule(Base):
     classroom = relationship("Classroom")
 
 
-class Auth(Base):
-    __tablename__ = "auth"
-    id = Column(Integer, primary_key = True, index = True)
-    user = Column(String, nullable = False)
-    password = Column(String, nullable = False)
-    email = Column(String, nullable = False)
-
-
 # Создание таблиц
 
 def init_db():
