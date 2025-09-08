@@ -54,3 +54,6 @@ class Auth(Base):
 
 def init_db():
     Base.metadata.create_all(bind = engine)
+
+
+__all__ = ["init_db", "Subject", "Teacher", "Classroom", "Schedule", "Auth", "SessionLocal"]
