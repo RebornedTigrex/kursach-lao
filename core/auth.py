@@ -2,7 +2,6 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi import Depends, FastAPI, HTTPException, status
 import bcrypt
 from sqlalchemy.testing.pickleable import User
-
 from db_work import Auth, SessionLocal
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl = "token")
@@ -27,4 +26,3 @@ def authenticate_user():
     db.add(auth)
     db.commit()
     return {"access_token": user, "token_type": "bearer"}
-
