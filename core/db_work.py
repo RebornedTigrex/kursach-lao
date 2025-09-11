@@ -8,6 +8,14 @@ SessionLocal = sessionmaker(bind = engine)
 Base = declarative_base()
 
 
+def connect_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
 class Subject(Base):
     __tablename__ = "subjects"
     id = Column(Integer, primary_key = True, index = True)
@@ -56,4 +64,4 @@ def init_db():
     Base.metadata.create_all(bind = engine)
 
 
-__all__ = ["init_db", "Subject", "Teacher", "Classroom", "Schedule", "Auth", "SessionLocal"]
+__all__ = ["Subject", "Teacher", "Classroom", "Schedule", "Auth"]
