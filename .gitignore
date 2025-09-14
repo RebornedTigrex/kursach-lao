@@ -2,3 +2,6 @@
 */.vscode/
 */.venv/
 database.db
+*/nginx/cert.pem
+*/nginx/key.pem
+.env

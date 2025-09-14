@@ -12,6 +12,20 @@ services:
     environment:
       - TZ=Europe/Moscow
 
+  sertificates:
+    build:
+      context: ./certbot
+      dockerfile: Dockerfile.certificates
+      args:
+        - DOMAIN_EMAIL: ${DOMAIN_EMAIL}
+        - DOMAIN_URL : ${DOMAIN_URL}
+    ports:
+      - "6000:80"
+    volumes:
+      - ./nginx/:/etc/nginx/
+    env_file:
+      - .env
+
   frontend:
     build:
       context: .
