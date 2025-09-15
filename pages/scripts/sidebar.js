@@ -1,17 +1,20 @@
 function insertSidebar(activeIndex = 0) {
     const sidebarHTML = `
     <div class="sidebar">
-        <div class="logo">Расписание Факультета</div>
-        <button class="toggle-sidebar"><i class="fas fa-bars"></i></button>
+        <div class="sidebar-flex">
+            <button class="toggle-sidebar"><i class="fas fa-bars"></i></button>
+            <div class="logo">Расписание Факультета</div>
+        </div>
         <ul>
-            <li><i class="fas fa-calendar-alt"></i> Расписание</li>
-            <li><i class="fas fa-book"></i> Предметы</li>
-            <li><i class="fas fa-chalkboard-teacher"></i> Преподаватели</li>
-            <li><i class="fas fa-building"></i> Аудитории</li>
-            <li><i class="fas fa-cog"></i> Настройки</li>
+            <li><i class="fas fa-calendar-alt"></i> <p id="slable">Расписание</p></li>
+            <li><i class="fas fa-book"></i> <p id="slable">Предметы</p></li>
+            <li><i class="fas fa-chalkboard-teacher"></i> <p id="slable">Преподаватели</p></li>
+            <li><i class="fas fa-building"></i> <p id="slable">Аудитории</p></li>
+            <li><i class="fas fa-cog"></i> <p id="slable">Настройки</p></li>
         </ul>
     </div>
     `;
+
     const main = document.querySelector('.main-content');
     if (main) {
         main.insertAdjacentHTML('beforebegin', sidebarHTML);
@@ -39,5 +42,6 @@ function insertSidebar(activeIndex = 0) {
     // Кнопка сворачивания
     document.querySelector('.toggle-sidebar').addEventListener('click', function() {
         document.querySelector('.sidebar').classList.toggle('collapsed');
+        document.getElementById('slable').classList.toggle("offsl");
     });
 }
