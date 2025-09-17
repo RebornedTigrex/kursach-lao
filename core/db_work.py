@@ -58,6 +58,12 @@ class Auth(Base):
     email = Column(String)
 
 
+class Token(Base):
+    __tablename__ = "token"
+    id = Column(Integer, ForeignKey("Auth.id"), primary_key = True, index = True)
+    token = Column(String, nullable = False, unique = True)
+
+
 # Создание таблиц
 
 def init_db():
