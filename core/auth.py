@@ -70,7 +70,7 @@ def authorization_user():
         if not user:
             raise HTTPException(status_code = 400, detail = text_incorrect)
         if check_password(password, user.password_hash):
-            return {"access_token": user.user, "token_type": "bearer"}
+            return {"access_token": user.token.token, "token_type": "bearer"}
         else:
             raise HTTPException(status_code = 400, detail = text_incorrect)
 
@@ -79,25 +79,36 @@ if __name__ == "__main__":
     import os
 
     init_db()
-    with SessionLocal() as db:
-        test_v: str = input("Введите 1 для Регистрация юзера иначе авторизация: ")
-        test_d: dict
-        if test_v == "1":
-            test_d = registration_user()
-        else:
-            auth = Auth(user = "lox", password_hash = hash_password("1234"))
-            db.add(auth)
-            db.commit()
-            print(f"данные для входа: user={auth.user}, pass=1234")
-            test_d = authorization_user()
-        lst_a = [f"id = {x.id}, user = {x.user}, passworrd = {x.password_hash}" for x in db.query(Auth).all()]
-        lst_t = [f"uid = {x.uid}, token = {x.token}" for x in db.query(Token).all()]
-        print(f"функция вернула: {test_d}\nв таблице Auth щас: {lst_a}\nв таблице Token щас: {lst_t}")
-        db.close()
-
-    engine.dispose()
     try:
-        os.remove("database.db")
-        print("Бд нахуй снесена")
-    except Exception as e:
-        print("Ёптыть бд не удолилась", e)
+        with SessionLocal() as db:
+            test_v: str = input("Введите 1 для Регистрация юзера иначе авторизация: ")
+            test_d: dict
+            if test_v == "1":
+                test_d = registration_user()
+            else:
+                auth = Auth(user = "lox", password_hash = hash_password("1234"))
+                db.add(auth)
+                db.flush()
+                print(f"данные для входа: user={auth.user}, pass=1234")
+                access_token_expires = timedelta(minutes = ACCESS_TOKEN_EXPIRE_MINUTES)
+                access_token = create_access_token(
+                    data = {"sub": auth.user}, expires_delta = access_token_expires
+                )
+                token = Token(uid = auth.id, token = access_token)
+                db.add(token)
+                db.commit()
+                test_d = authorization_user()
+            lst_a = [f"id = {x.id}, user = {x.user}, passworrd = {x.password_hash}" for x in db.query(Auth).all()]
+            lst_t = [f"uid = {x.uid}, token = {x.token}" for x in db.query(Token).all()]
+            print(f"функция вернула: {test_d}\nв таблице Auth щас: {lst_a}\nв таблице Token щас: {lst_t}")
+
+    except BaseException as base_e:
+        raise base_e
+    finally:
+        db.close()
+        engine.dispose()
+        try:
+            os.remove("database.db")
+            print("Бд нахуй снесена")
+        except Exception as e:
+            print("Ёптыть бд не удолилась", e)

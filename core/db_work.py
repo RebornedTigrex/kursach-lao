@@ -57,7 +57,7 @@ class Auth(Base):
     password_hash = Column(String, nullable = False)
     email = Column(String)
 
-    tokens = relationship("Token", back_populates = "user", cascade = "all, delete-orphan")
+    token = relationship("Token", back_populates = "user", cascade = "all, delete-orphan", uselist = False)
 
 
 class Token(Base):
