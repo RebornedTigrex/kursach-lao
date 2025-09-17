@@ -60,8 +60,10 @@ class Auth(Base):
 
 class Token(Base):
     __tablename__ = "token"
-    id = Column(Integer, ForeignKey("Auth.id"), primary_key = True, index = True)
+    uid = Column(Integer, ForeignKey("auth.id"), primary_key = True, index = True)
     token = Column(String, nullable = False, unique = True)
+
+    user = relationship("Auth")
 
 
 # Создание таблиц
@@ -71,3 +73,6 @@ def init_db():
 
 
 __all__ = ["Subject", "Teacher", "Classroom", "Schedule", "Auth"]
+
+if __name__ == "__main__":
+    init_db()
