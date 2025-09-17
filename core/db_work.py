@@ -57,10 +57,12 @@ class Auth(Base):
     password_hash = Column(String, nullable = False)
     email = Column(String)
 
+    tokens = relationship("Token", back_populates = "user", cascade = "all, delete-orphan")
+
 
 class Token(Base):
     __tablename__ = "token"
-    uid = Column(Integer, ForeignKey("auth.id"), primary_key = True, index = True)
+    uid = Column(Integer, ForeignKey("auth.id"), primary_key = True)
     token = Column(String, nullable = False, unique = True)
 
     user = relationship("Auth")
@@ -72,7 +74,7 @@ def init_db():
     Base.metadata.create_all(bind = engine)
 
 
-__all__ = ["Subject", "Teacher", "Classroom", "Schedule", "Auth"]
+__all__ = ["Subject", "Teacher", "Classroom", "Schedule", "Auth", "Token"]
 
 if __name__ == "__main__":
     init_db()
