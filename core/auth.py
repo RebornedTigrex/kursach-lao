@@ -1,114 +1,120 @@
-from datetime import datetime, timezone, timedelta
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from fastapi import Depends, FastAPI, HTTPException, status
+import os
+from datetime import datetime, timedelta, timezone
+from typing import Optional, Dict, Any
+
 import bcrypt
 import jwt
-from jwt.exceptions import InvalidTokenError
-from sqlalchemy.orm import Session
-from sqlalchemy.testing.pickleable import User
-from db_work import Auth, SessionLocal, init_db, engine, connect_db, Token
+from jwt import ExpiredSignatureError, InvalidTokenError
 
-ALGORITHM = "HS256"
-SECRET_KEY = "5c6a5cc4dd658887b26ea94b9b644b8e5f535319924b48e642b3f1ba2612a81d"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl = "token")
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
+
+from db_work import Auth, SessionLocal, init_db, engine, connect_db
+
+SECRET_KEY = os.getenv("SECRET_KEY", r"../.env")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY is not set. Set it in environment or in .env before running the app.")
+
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+
+try:
+    ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "15"))
+except ValueError:
+    ACCESS_TOKEN_EXPIRE_MINUTES = 15
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl = "/api/auth")
 
 text_incorrect = "Incorrect username or password"
 
 
 def hash_password(password: str) -> str:
+    """Возвращает закодированный хэш пароля (str)."""
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def check_password(input_password: str, stored_password: str) -> bool:
+    """Проверяет plain password против хэша."""
     return bcrypt.checkpw(input_password.encode("utf-8"), stored_password.encode("utf-8"))
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
-    """ создание токена """
+def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
+    """ Создаёт JWT с полем exp и iat.
+    :param data: содержит {"sub": username} или {"sub": user_id}.
+    :return: Возвращает строку токена.
+    """
     to_encode = data.copy()
+    now = datetime.now(timezone.utc)
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = now + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes = 15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm = ALGORITHM)
-    return encoded_jwt
+        expire = now + timedelta(minutes = ACCESS_TOKEN_EXPIRE_MINUTES)
+
+    to_encode.update({"iat": now, "exp": expire})
+    token = jwt.encode(to_encode, SECRET_KEY, algorithm = ALGORITHM)
+    return token
 
 
-def registration_user() -> dict[str, str]:
-    """ Регистрация пользователя """
-    with SessionLocal() as db:  # ПОКА костыль пока нету эндпоинта и декоратора от FastApi
-        user, password = input("Введите имя пользователя и пароль через пробел: ").split()
-        if db.query(Auth).filter(Auth.user == user).first():
-            raise HTTPException(status_code = 401, detail = "This username already exists")
-        if not user or not password:
-            raise HTTPException(
-                status_code = status.HTTP_401_UNAUTHORIZED,
-                detail = text_incorrect,
-                headers = {"WWW-Authenticate": "Bearer"},
-            )
-        hashed_password = hash_password(password)
-        auth = Auth(user = user, password_hash = hashed_password)
-        db.add(auth)
-        db.flush()
-        access_token_expires = timedelta(minutes = ACCESS_TOKEN_EXPIRE_MINUTES)
-        access_token = create_access_token(
-            data = {"sub": auth.user}, expires_delta = access_token_expires
-        )
-        token = Token(uid = auth.id, token = access_token)
-        db.add(token)
-        db.commit()
-        return {"access_token": access_token, "token_type": "bearer"}
-
-
-def authorization_user():
-    """ Авторизация юзера """
-    with SessionLocal() as db:  # ПОКА костыль пока нету эндпоинта и декоратора от FastApi
-        username, password = input("Введите имя пользователя и пароль через пробел: ").split()
-        user = db.query(Auth).filter(Auth.user == username).first()
-        if not user:
-            raise HTTPException(status_code = 400, detail = text_incorrect)
-        if check_password(password, user.password_hash):
-            return {"access_token": user.token.token, "token_type": "bearer"}
-        else:
-            raise HTTPException(status_code = 400, detail = text_incorrect)
-
-
-if __name__ == "__main__":
-    import os
-
-    init_db()
+def verify_access_token(token: str) -> Dict[str, Any]:
+    """
+    Декодирует и проверяет токен.
+    В случае ошибки бросает HTTPException 401.
+    :return Возвращает payload (словарь).
+    """
     try:
-        with SessionLocal() as db:
-            test_v: str = input("Введите 1 для Регистрация юзера иначе авторизация: ")
-            test_d: dict
-            if test_v == "1":
-                test_d = registration_user()
-            else:
-                auth = Auth(user = "lox", password_hash = hash_password("1234"))
-                db.add(auth)
-                db.flush()
-                print(f"данные для входа: user={auth.user}, pass=1234")
-                access_token_expires = timedelta(minutes = ACCESS_TOKEN_EXPIRE_MINUTES)
-                access_token = create_access_token(
-                    data = {"sub": auth.user}, expires_delta = access_token_expires
-                )
-                token = Token(uid = auth.id, token = access_token)
-                db.add(token)
-                db.commit()
-                test_d = authorization_user()
-            lst_a = [f"id = {x.id}, user = {x.user}, passworrd = {x.password_hash}" for x in db.query(Auth).all()]
-            lst_t = [f"uid = {x.uid}, token = {x.token}" for x in db.query(Token).all()]
-            print(f"функция вернула: {test_d}\nв таблице Auth щас: {lst_a}\nв таблице Token щас: {lst_t}")
+        payload = jwt.decode(token, SECRET_KEY, algorithms = [ALGORITHM])
+    except ExpiredSignatureError:
+        raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED, detail = "Token expired")
+    except InvalidTokenError:
+        raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED, detail = "Invalid token")
+    return payload
 
-    except BaseException as base_e:
-        raise base_e
-    finally:
-        db.close()
-        engine.dispose()
-        try:
-            os.remove("database.db")
-            print("Бд нахуй снесена")
-        except Exception as e:
-            print("Ёптыть бд не удолилась", e)
+
+def get_current_user(db: Session = Depends(connect_db), token: str = Depends(oauth2_scheme)) -> Auth:
+    """
+    Зависимость для эндпоинтов FastAPI.
+    Проверяет токен, находит пользователя в БД и возвращает ORM-объект Auth.
+    Бросает HTTPException(401) при любой ошибке.
+    """
+    payload = verify_access_token(token)
+    username = payload.get("sub")
+    if username is None:
+        raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED, detail = "Invalid token payload")
+
+    user = db.query(Auth).filter(Auth.user == username).first()
+    if not user:
+        raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED, detail = "User not found")
+    return user
+
+
+def register_user(db: Session, username: str, password: str) -> Auth:
+    """
+    Создаёт пользователя в БД. Если пользователь существует — бросает HTTPException(400).
+    :return Возвращает объект Auth
+    """
+    if db.query(Auth).filter(Auth.user == username).first():
+        raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST, detail = "Username already exists")
+
+    hashed = hash_password(password)
+    user = Auth(user = username, password_hash = hashed)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def authenticate_user(db: Session, username: str, password: str) -> str:
+    """
+    Аутентификация: проверяет логин/пароль.
+    Бросает HTTPException(401) при неверных данных.
+    :return: возвращает access token (JWT).
+    """
+    user = db.query(Auth).filter(Auth.user == username).first()
+    if not user or not check_password(password, user.password_hash):
+        raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED, detail = "Incorrect username or password")
+
+    access_token = create_access_token(
+        data = {"sub": user.user},
+        expires_delta = timedelta(minutes = ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    return access_token
