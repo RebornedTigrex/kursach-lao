@@ -76,3 +76,13 @@ def post_teacher(data: str = Body(...), db: Session = Depends(connect_db)):
 @app.delete("/api/teachers/")
 def delete_teacher(id: int = Body(...), db: Session = Depends(connect_db)):
     return s_delete_teacher(db, id)
+
+
+@app.post("/api/register")
+def post_register(data: dict = Body(...), db: Session = Depends(connect_db)):
+    return s_post_register(db, data)
+
+
+@app.post("/api/auth")
+def post_auth(data: dict = Body(...), db: Session = Depends(connect_db)):
+    return s_post_auth(db, data)
