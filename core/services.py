@@ -1,7 +1,11 @@
-from fastapi import Body
+from fastapi import Body, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime
+from typing import Dict, Any
+import re
+
 from db_work import *
+from auth import register_user, authenticate_user
 
 
 def s_get_subjects(db: Session):
@@ -130,5 +134,47 @@ def s_delete_teacher(db: Session, id: int = Body(...)):
     return {"status": "ok"}
 
 
+def _extract_credentials(data: Dict[str, Any]) -> tuple[str, str]:
+    """
+    Вспомогательная: извлечь username и password из data, валидировать минимум.
+    Бросает HTTPException(400) если некорректно.
+    :return: (username, password)
+    """
+    username = data.get("username", None)
+    password = data.get("password", None)
+    if not username or not password or not isinstance(password, str) or not isinstance(username, str):
+        raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST, detail = "Missing username or password")
+    username = username.strip()
+    reg = re.compile(r"\A([a-zA-Z0-9_-]){1,15}\Z")
+    if not re.fullmatch(reg, username) or not re.fullmatch(reg, password):
+        raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST, detail = "Invalid username or password")
+
+    return username, password
+
+
+def s_post_register(db: Session, data: Dict[str, Any] = Body(...)) -> Dict[str, str]:
+    """
+    Сервис для регистрации: создаёт пользователя и возвращает access token.
+    :param data: {"username": "...", "password": "..."}
+    :return: возвращает access token в виде: {"access_token": str, "token_type": "bearer"}
+    """
+    username, password = _extract_credentials(data)
+
+    token, _ = register_user(db, username, password)
+    return {"access_token": token, "token_type": "bearer"}
+
+
+def s_post_auth(db: Session, data: Dict[str, Any] = Body(...)) -> Dict[str, str]:
+    """
+    Сервис для аутентификации: проверяет логин/пароль
+    :return: возвращает access token в виде: {"access_token": str, "token_type": "bearer"}
+    """
+    username, password = _extract_credentials(data)
+
+    token = authenticate_user(db, username, password)
+    return {"access_token": token, "token_type": "bearer"}
+
+
 __all__ = ["s_get_subjects", "s_get_rooms", "s_get_teachers", "s_get_schedule", "s_post_schedule", "s_delete_schedule",
-           "s_post_subject", "s_delete_subject", "s_post_room", "s_delete_room", "s_post_teacher", "s_delete_teacher"]
+           "s_post_subject", "s_delete_subject", "s_post_room", "s_delete_room", "s_post_teacher", "s_delete_teacher",
+           "s_post_register", "s_post_auth"]
