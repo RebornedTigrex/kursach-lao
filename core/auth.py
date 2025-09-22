@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timedelta, timezone
+from sqlalchemy.exc import IntegrityError
 from typing import Optional, Dict, Any
 
 import bcrypt
@@ -87,7 +88,7 @@ def get_current_user(db: Session = Depends(connect_db), token: str = Depends(oau
     return user
 
 
-def register_user(db: Session, username: str, password: str) -> tuple[str, Auth]:
+def register_user(db: Session, username: str, password: str) -> tuple[str, "Auth"]:
     """
     Создаёт пользователя в БД. Если пользователь существует — бросает HTTPException(400).
     :return: (access_token: str , user: Auth, соотвествующая запись в таблице)
@@ -98,14 +99,16 @@ def register_user(db: Session, username: str, password: str) -> tuple[str, Auth]
     hashed = hash_password(password)
     user = Auth(user = username, password_hash = hashed)
     db.add(user)
-    db.flush()
-    db.commit()
-    db.refresh(user)
-
-    access_token = create_access_token(
-        data = {"sub": user.user},
-        expires_delta = timedelta(minutes = ACCESS_TOKEN_EXPIRE_MINUTES)
-    )
+    try:
+        access_token = create_access_token(
+            data = {"sub": user.user},
+            expires_delta = timedelta(minutes = ACCESS_TOKEN_EXPIRE_MINUTES)
+        )
+        db.commit()
+        db.refresh(user)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST, detail = "Username already exists")
 
     return access_token, user
 
