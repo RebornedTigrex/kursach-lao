@@ -3,15 +3,25 @@ function insertSidebar(activeIndex = 0) {
     <div class="sidebar">
         <div class="sidebar-flex">
             <button class="toggle-sidebar"><i class="fas fa-bars"></i></button>
-            <div class="logo">Расписание Факультета</div>
+            <div class="spc logo">Расписание Факультета</div>
         </div>
         <ul>
-            <li><i class="fas fa-calendar-alt"></i> <p id="slable">Расписание</p></li>
-            <li><i class="fas fa-book"></i> <p id="slable">Предметы</p></li>
-            <li><i class="fas fa-chalkboard-teacher"></i> <p id="slable">Преподаватели</p></li>
-            <li><i class="fas fa-building"></i> <p id="slable">Аудитории</p></li>
-            <li><i class="fas fa-cog"></i> <p id="slable">Настройки</p></li>
+            <li><i class="fas spc fa-calendar-alt"></i> <p class="slable">Расписание</p></li>
+            <li><i class="fas spc fa-book"></i> <p class="slable">Предметы</p></li>
+            <li><i class="fas spc fa-chalkboard-teacher"></i> <p class="slable">Преподаватели</p></li>
+            <li><i class="fas spc fa-building"></i> <p class="slable">Аудитории</p></li>
+            <li><i class="fas spc fa-cog"></i> <p class="slable">Настройки</p></li>
         </ul>
+        <div class="login-card">
+            <a class="login-card-a" href="registration.html">
+                <div class="login-card-flex">
+                    <div class="login-card-photo">
+                        <img class="login-card-img" src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%2Fid%2FOIP.yvj61X0dbFFF8viA7fmKcAHaEV%3Fpid%3DApi&f=1&ipt=1ae4405c4e7067ae6eb24120bdff00d4d7ee5b09192b3a032a0f6614763abff3&ipo=images">
+                    </div>
+                    <p class="login-name slable">1111111111111111111111</p>
+                </div>
+            </a>
+        </div>
     </div>
     `;
 
@@ -42,6 +52,36 @@ function insertSidebar(activeIndex = 0) {
     // Кнопка сворачивания
     document.querySelector('.toggle-sidebar').addEventListener('click', function() {
         document.querySelector('.sidebar').classList.toggle('collapsed');
-        document.getElementById('slable').classList.toggle("offsl");
+        const elementsTextSL = document.querySelectorAll('.slable');
+        const elementsSlidablePictures = document.querySelectorAll('.spc');
+        const logoElements = document.getElementsByClassName('logo');
+        const sflex = document.querySelector('.sidebar-flex');
+        const lflex = document.querySelector('.login-card-flex');
+        elementsTextSL.forEach(element => {
+            if (window.getComputedStyle(element).display === 'none') {
+                element.style.display = 'block';
+            } else {
+                element.style.display = 'none';
+            }
+        });
+        Array.from(logoElements).forEach(function(element) {
+        if (window.getComputedStyle(element).display === 'none') {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
+        }
+        });
+        elementsSlidablePictures.forEach(element => {
+            if (window.getComputedStyle(element).marginRight === '0px') {
+                sflex.style.justifyContent = '';
+                lflex.style.justifyContent = '';
+                element.style.margin = '0 10px 0 0';
+            } else {
+                sflex.style.justifyContent = 'flex-end';
+                lflex.style.justifyContent = 'flex-end';
+                element.style.margin = '0 0 0 auto';
+            }
+        });
+
     });
 }
