@@ -4,8 +4,8 @@ from datetime import datetime
 from typing import Dict, Any
 import re
 
-from db_work import *
-from auth import register_user, authenticate_user
+from core.db_work import *
+from core.auth import register_user, authenticate_user
 
 
 def s_get_subjects(db: Session):

@@ -11,7 +11,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
-from db_work import Auth, SessionLocal, init_db, engine, connect_db
+from core.db_work import Auth, connect_db
 
 SECRET_KEY = os.getenv("SECRET_KEY", r"../.env")
 if not SECRET_KEY:
@@ -26,7 +26,7 @@ except ValueError:
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl = "/api/auth")
 
-text_incorrect = "Incorrect username or password"
+text_user_exists = "Username already exists"
 
 
 def hash_password(password: str) -> str:
@@ -94,7 +94,7 @@ def register_user(db: Session, username: str, password: str) -> tuple[str, "Auth
     :return: (access_token: str , user: Auth, соотвествующая запись в таблице)
     """
     if db.query(Auth).filter(Auth.user == username).first():
-        raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST, detail = "Username already exists")
+        raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST, detail = text_user_exists)
 
     hashed = hash_password(password)
     user = Auth(user = username, password_hash = hashed)
@@ -108,7 +108,7 @@ def register_user(db: Session, username: str, password: str) -> tuple[str, "Auth
         )
     except IntegrityError:
         db.rollback()
-        raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST, detail = "Username already exists")
+        raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST, detail = text_user_exists)
 
     return access_token, user
 

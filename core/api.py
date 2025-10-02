@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Body, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from db_work import init_db, connect_db
-from services import *
+from core.db_work import init_db, connect_db
+from core.services import *
 
 init_db()
 
