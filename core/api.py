@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Body, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from core.db_work import init_db, connect_db
+import asyncio
+from core.db_work import init_db, connect_db, SessionLocal
 from core.services import *
 
 init_db()
@@ -14,6 +15,19 @@ app.add_middleware(
     allow_methods = ["*"],
     allow_headers = ["*"],
 )
+
+
+def _run_with_session(func, *args, **kwargs):
+    """
+    Создаёт отдельную SessionLocal внутри текущего (worker) потока,
+    вызывает синхронную функцию func(db, *args, **kwargs) и закрывает сессию.
+    Это гарантирует, что сессия используется в том же потоке, где создана.
+    """
+    db: Session = SessionLocal()
+    try:
+        return func(db = db, *args, **kwargs)
+    finally:
+        db.close()
 
 
 # ==================== API ====================
@@ -34,18 +48,18 @@ def get_teachers(db: Session = Depends(connect_db)):
 
 
 @app.get("/api/schedule/")
-def get_schedule(db: Session = Depends(connect_db)):
-    return s_get_schedule(db)
+async def get_schedule():
+    return await asyncio.to_thread(_run_with_session, s_get_schedule)
 
 
 @app.post("/api/schedule/")
-def post_schedule(data: dict, db: Session = Depends(connect_db)):
-    return s_post_schedule(data, db)
+async def post_schedule(data: dict = Body(...)):
+    return await asyncio.to_thread(_run_with_session, s_post_schedule, data)
 
 
 @app.delete("/api/schedule/")
-def delete_schedule(key: str = Body(...), db: Session = Depends(connect_db)):
-    return s_delete_schedule(db, key)
+async def delete_schedule(key: str = Body(...)):
+    return await asyncio.to_thread(_run_with_session, s_delete_schedule, key)
 
 
 @app.post("/api/subjects/")
@@ -79,10 +93,10 @@ def delete_teacher(id: int = Body(...), db: Session = Depends(connect_db)):
 
 
 @app.post("/api/register")
-def post_register(data: dict = Body(...), db: Session = Depends(connect_db)):
-    return s_post_register(db, data)
+async def post_register(data: dict = Body(...)):
+    return await asyncio.to_thread(_run_with_session, s_post_register, data)
 
 
 @app.post("/api/auth")
-def post_auth(data: dict = Body(...), db: Session = Depends(connect_db)):
-    return s_post_auth(db, data)
+async def post_auth(data: dict = Body(...)):
+    return await asyncio.to_thread(_run_with_session, s_post_auth, data)
