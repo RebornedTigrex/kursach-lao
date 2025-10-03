@@ -9,7 +9,7 @@ from jwt import ExpiredSignatureError, InvalidTokenError
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, InstrumentedAttribute
 
 from core.db_work import Auth, connect_db
 
@@ -71,7 +71,8 @@ def verify_access_token(token: str) -> Dict[str, Any]:
     return payload
 
 
-def get_current_user(db: Session = Depends(connect_db), token: str = Depends(oauth2_scheme)) -> Auth:
+def get_current_user(db: Session = Depends(connect_db), token: str = Depends(oauth2_scheme)) -> dict[
+    str, Any]:
     """
     Зависимость для эндпоинтов FastAPI.
     Проверяет токен, находит пользователя в БД и возвращает ORM-объект Auth.
@@ -85,7 +86,7 @@ def get_current_user(db: Session = Depends(connect_db), token: str = Depends(oau
     user = db.query(Auth).filter(Auth.user == username).first()
     if not user:
         raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED, detail = "User not found")
-    return user
+    return {"username": user.user, "id": user.id}
 
 
 def register_user(db: Session, username: str, password: str) -> tuple[str, "Auth"]:

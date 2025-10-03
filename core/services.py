@@ -39,7 +39,8 @@ def s_get_schedule(db: Session):
     return result
 
 
-def s_post_schedule(data: dict, db: Session):
+def s_post_schedule(db: Session, current_user: dict[str, Any], data: dict):
+    print(f"for test and logs: это сделаль этот шушпин: {current_user['username']}, с id = {current_user['id']}")
     print(data)
     datekey = list(data.keys())[0]
     print(datekey)
@@ -69,7 +70,8 @@ def s_post_schedule(data: dict, db: Session):
     return {"status": "ok"}
 
 
-def s_delete_schedule(db: Session, key: str = Body(...)):
+def s_delete_schedule(db: Session, current_user: dict[str, Any], key: str = Body(...)):
+    print(f"for test and logs: это сделаль этот шушпин: {current_user['username']}, с id = {current_user['id']}")
     sched = db.query(Schedule).filter_by(datekey = key).first()
     if sched:
         db.delete(sched)
@@ -79,7 +81,8 @@ def s_delete_schedule(db: Session, key: str = Body(...)):
         return {"status": "error", "msg": "invalid key"}
 
 
-def s_post_subject(db: Session, data: str = Body(...)):
+def s_post_subject(db: Session, current_user: dict[str, Any], data: str = Body(...)):
+    print(f"for test and logs: это сделаль этот шушпин: {current_user['username']}, с id = {current_user['id']}")
     name = data
     if not name:
         return {"status": "error", "msg": "name required"}
@@ -89,7 +92,8 @@ def s_post_subject(db: Session, data: str = Body(...)):
     return {"status": "ok", "id": subject.id}
 
 
-def s_delete_subject(db: Session, id: int = Body(...)):
+def s_delete_subject(db: Session, current_user: dict[str, Any], id: int = Body(...)):
+    print(f"for test and logs: это сделаль этот шушпин: {current_user['username']}, с id = {current_user['id']}")
     subject = db.query(Subject).filter_by(id = id).first()
     if subject:
         db.delete(subject)
@@ -97,7 +101,8 @@ def s_delete_subject(db: Session, id: int = Body(...)):
     return {"status": "ok"}
 
 
-def s_post_room(db: Session, data: str = Body(...)):
+def s_post_room(db: Session, current_user: dict[str, Any], data: str = Body(...)):
+    print(f"for test and logs: это сделаль этот шушпин: {current_user['username']}, с id = {current_user['id']}")
     number = data
     if not number:
         return {"status": "error", "msg": "number required"}
@@ -107,7 +112,8 @@ def s_post_room(db: Session, data: str = Body(...)):
     return {"status": "ok", "id": room.id}
 
 
-def s_delete_room(db: Session, id: int = Body(...)):
+def s_delete_room(db: Session, current_user: dict[str, Any], id: int = Body(...)):
+    print(f"for test and logs: это сделаль этот шушпин: {current_user['username']}, с id = {current_user['id']}")
     print(f"Deleting room with id: {id}")
     room = db.query(Classroom).filter_by(id = id).first()
     if room:
@@ -116,7 +122,8 @@ def s_delete_room(db: Session, id: int = Body(...)):
     return {"status": "ok"}
 
 
-def s_post_teacher(db: Session, data: str = Body(...)):
+def s_post_teacher(db: Session, current_user: dict[str, Any], data: str = Body(...)):
+    print(f"for test and logs: это сделаль этот шушпин: {current_user['username']}, с id = {current_user['id']}")
     full_name = data
     if not full_name:
         return {"status": "error", "msg": "full_name required"}
@@ -126,7 +133,8 @@ def s_post_teacher(db: Session, data: str = Body(...)):
     return {"status": "ok", "id": teacher.id}
 
 
-def s_delete_teacher(db: Session, id: int = Body(...)):
+def s_delete_teacher(db: Session, current_user: dict[str, Any], id: int = Body(...)):
+    print(f"for test and logs: это сделаль этот шушпин: {current_user['username']}, с id = {current_user['id']}")
     teacher = db.query(Teacher).filter_by(id = id).first()
     if teacher:
         db.delete(teacher)

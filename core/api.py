@@ -2,8 +2,10 @@ from fastapi import FastAPI, Body, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 import asyncio
+
 from core.db_work import init_db, connect_db, SessionLocal
 from core.services import *
+from core.auth import get_current_user
 
 init_db()
 
@@ -25,7 +27,7 @@ def _run_with_session(func, *args, **kwargs):
     """
     db: Session = SessionLocal()
     try:
-        return func(db = db, *args, **kwargs)
+        return func(db, *args, **kwargs)
     finally:
         db.close()
 
@@ -53,43 +55,45 @@ async def get_schedule():
 
 
 @app.post("/api/schedule/")
-async def post_schedule(data: dict = Body(...)):
-    return await asyncio.to_thread(_run_with_session, s_post_schedule, data)
+async def post_schedule(data: dict = Body(...), current_user: dict = Depends(get_current_user)):
+    return await asyncio.to_thread(_run_with_session, s_post_schedule, current_user, data)
 
 
 @app.delete("/api/schedule/")
-async def delete_schedule(key: str = Body(...)):
-    return await asyncio.to_thread(_run_with_session, s_delete_schedule, key)
+async def delete_schedule(key: str = Body(...), current_user: dict = Depends(get_current_user)):
+    return await asyncio.to_thread(_run_with_session, s_delete_schedule, current_user, key)
 
 
 @app.post("/api/subjects/")
-def post_subject(data: str = Body(...), db: Session = Depends(connect_db)):
-    return s_post_subject(db, data)
+def post_subject(data: str = Body(...), current_user: dict = Depends(get_current_user),
+                 db: Session = Depends(connect_db)):
+    return s_post_subject(db, current_user, data)
 
 
 @app.delete("/api/subjects/")
-def delete_subject(id: int = Body(...), db: Session = Depends(connect_db)):
-    return s_delete_subject(db, id)
+def delete_subject(id: int = Body(...), current_user: dict = Depends(get_current_user),
+                   db: Session = Depends(connect_db)):
+    return s_delete_subject(db, current_user, id)
 
 
 @app.post("/api/rooms/")
-def post_room(data: str = Body(...), db: Session = Depends(connect_db)):
-    return s_post_room(db, data)
+def post_room(data: str = Body(...), current_user: dict = Depends(get_current_user), db: Session = Depends(connect_db)):
+    return s_post_room(db, current_user, data)
 
 
 @app.delete("/api/rooms/")
-def delete_room(id: int = Body(...), db: Session = Depends(connect_db)):
-    return s_delete_room(db, id)
+def delete_room(id: int = Body(...), current_user: dict = Depends(get_current_user), db: Session = Depends(connect_db)):
+    return s_delete_room(db, current_user, id)
 
 
 @app.post("/api/teachers/")
-def post_teacher(data: str = Body(...), db: Session = Depends(connect_db)):
-    return s_post_teacher(db, data)
+def post_teacher(data: str = Body(...), current_user: dict = Depends(get_current_user), db: Session = Depends(connect_db)):
+    return s_post_teacher(db, current_user, data)
 
 
 @app.delete("/api/teachers/")
-def delete_teacher(id: int = Body(...), db: Session = Depends(connect_db)):
-    return s_delete_teacher(db, id)
+def delete_teacher(id: int = Body(...), current_user: dict = Depends(get_current_user), db: Session = Depends(connect_db)):
+    return s_delete_teacher(db, current_user, id)
 
 
 @app.post("/api/register")
