@@ -30,6 +30,8 @@
             transition: all 0.3s;
             transform: translateX(0);
             z-index: 100;
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
         }
         .sidebar.collapsed {transform: translateX(-200px);}
 

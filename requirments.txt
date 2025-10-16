@@ -24,3 +24,6 @@ starlette==0.46.2
 typing-inspection==0.4.1
 typing_extensions==4.14.0
 uvicorn==0.34.3
+bcrypt==4.3.0
+pyjwt==2.10.1
+dotenv==0.9.9
