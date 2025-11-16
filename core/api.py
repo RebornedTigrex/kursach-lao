@@ -21,9 +21,7 @@ app.add_middleware(
 
 def _run_with_session(func, *args, **kwargs):
     """
-    Создаёт отдельную SessionLocal внутри текущего (worker) потока,
-    вызывает синхронную функцию func(db, *args, **kwargs) и закрывает сессию.
-    Это гарантирует, что сессия используется в том же потоке, где создана.
+    Создаёт отдельную SessionLocal внутри текущего потока, вызывает синхронную функцию func(db, *args, **kwargs) и закрывает сессию.
     """
     db: Session = SessionLocal()
     try:
@@ -87,12 +85,14 @@ def delete_room(id: int = Body(...), current_user: dict = Depends(get_current_us
 
 
 @app.post("/api/teachers/")
-def post_teacher(data: str = Body(...), current_user: dict = Depends(get_current_user), db: Session = Depends(connect_db)):
+def post_teacher(data: str = Body(...), current_user: dict = Depends(get_current_user),
+                 db: Session = Depends(connect_db)):
     return s_post_teacher(db, current_user, data)
 
 
 @app.delete("/api/teachers/")
-def delete_teacher(id: int = Body(...), current_user: dict = Depends(get_current_user), db: Session = Depends(connect_db)):
+def delete_teacher(id: int = Body(...), current_user: dict = Depends(get_current_user),
+                   db: Session = Depends(connect_db)):
     return s_delete_teacher(db, current_user, id)
 
 

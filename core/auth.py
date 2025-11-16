@@ -1,6 +1,5 @@
 import os
 from datetime import datetime, timedelta, timezone
-from sqlalchemy.exc import IntegrityError
 from typing import Optional, Dict, Any
 
 import bcrypt
@@ -9,13 +8,14 @@ from jwt import ExpiredSignatureError, InvalidTokenError
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session, InstrumentedAttribute
+from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from core.db_work import Auth, connect_db
 
 SECRET_KEY = os.getenv("SECRET_KEY", r"../.env")
 if not SECRET_KEY:
-    raise RuntimeError("SECRET_KEY is not set. Set it in environment or in .env before running the app.")
+    raise RuntimeError("SECRET_KEY is not set.")
 
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 
@@ -30,26 +30,23 @@ text_user_exists = "Username already exists"
 
 
 def hash_password(password: str) -> str:
-    """Возвращает закодированный хэш пароля (str)."""
+    """Хэширует пароль"""
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def check_password(input_password: str, stored_password: str) -> bool:
-    """Проверяет plain password против хэша."""
+    """Сверяет входной пароль и захэшированный"""
     return bcrypt.checkpw(input_password.encode("utf-8"), stored_password.encode("utf-8"))
 
 
-def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
-    """ Создаёт JWT с полем exp и iat.
-    :param data: содержит {"sub": username} или {"sub": user_id}.
-    :return: Возвращает строку токена.
+def create_access_token(data: Dict[str, Any]) -> str:
+    """ Создаёт JWT с полем exp и iat
+    :param data: содержит {"sub": username} или {"sub": user_id}
+    :return: Возвращает строку токена
     """
     to_encode = data.copy()
     now = datetime.now(timezone.utc)
-    if expires_delta:
-        expire = now + expires_delta
-    else:
-        expire = now + timedelta(minutes = ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = now + timedelta(minutes = ACCESS_TOKEN_EXPIRE_MINUTES)
 
     to_encode.update({"iat": now, "exp": expire})
     token = jwt.encode(to_encode, SECRET_KEY, algorithm = ALGORITHM)
@@ -58,9 +55,9 @@ def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta]
 
 def verify_access_token(token: str) -> Dict[str, Any]:
     """
-    Декодирует и проверяет токен.
-    В случае ошибки бросает HTTPException 401.
-    :return Возвращает payload (словарь).
+    Декодирует и проверяет токен
+    В случае ошибки бросает HTTPException 401
+    :return Возвращает payload (словарь)
     """
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms = [ALGORITHM])
@@ -103,10 +100,7 @@ def register_user(db: Session, username: str, password: str) -> tuple[str, "Auth
     try:
         db.commit()
         db.refresh(user)
-        access_token = create_access_token(
-            data = {"sub": user.user},
-            expires_delta = timedelta(minutes = ACCESS_TOKEN_EXPIRE_MINUTES)
-        )
+        access_token = create_access_token(data = {"sub": user.user})
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST, detail = text_user_exists)
@@ -124,8 +118,5 @@ def authenticate_user(db: Session, username: str, password: str) -> str:
     if not user or not check_password(password, user.password_hash):
         raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED, detail = "Incorrect username or password")
 
-    access_token = create_access_token(
-        data = {"sub": user.user},
-        expires_delta = timedelta(minutes = ACCESS_TOKEN_EXPIRE_MINUTES)
-    )
+    access_token = create_access_token(data = {"sub": user.user})
     return access_token
