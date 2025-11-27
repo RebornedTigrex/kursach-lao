@@ -10,17 +10,18 @@ from jwt import ExpiredSignatureError, InvalidTokenError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+from dotenv import dotenv_values
 
 from core.db_work import Auth, connect_db
 
-SECRET_KEY = os.getenv("SECRET_KEY", r"../.env")
+SECRET_KEY = dotenv_values(r"./.env")["SECRET_KEY"]
 if not SECRET_KEY:
     raise RuntimeError("SECRET_KEY is not set.")
 
-ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ALGORITHM = dotenv_values(r"./.env")["ALGORITHM"]
 
 try:
-    ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "15"))
+    ACCESS_TOKEN_EXPIRE_MINUTES = int(dotenv_values(r"./.env")["ACCESS_TOKEN_EXPIRE_MINUTES"])
 except ValueError:
     ACCESS_TOKEN_EXPIRE_MINUTES = 15
 
@@ -59,6 +60,8 @@ def verify_access_token(token: str) -> Dict[str, Any]:
     В случае ошибки бросает HTTPException 401
     :return Возвращает payload (словарь)
     """
+    print(token)
+    #t = {"access_token": token, "token_type": "bearer"}
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms = [ALGORITHM])
     except ExpiredSignatureError:
