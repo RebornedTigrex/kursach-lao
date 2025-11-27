@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Body, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
 import asyncio
 
@@ -21,7 +22,9 @@ app.add_middleware(
 
 def _run_with_session(func, *args, **kwargs):
     """
-    Создаёт отдельную SessionLocal внутри текущего потока, вызывает синхронную функцию func(db, *args, **kwargs) и закрывает сессию.
+    Создаёт отдельную SessionLocal внутри текущего (worker) потока,
+    вызывает синхронную функцию func(db, *args, **kwargs) и закрывает сессию.
+    Это гарантирует, что сессия используется в том же потоке, где создана.
     """
     db: Session = SessionLocal()
     try:
@@ -32,9 +35,7 @@ def _run_with_session(func, *args, **kwargs):
 
 # ==================== API ====================
 
-@app.get("/api/subjects/")
-def get_subjects(db: Session = Depends(connect_db)):
-    return s_get_subjects(db)
+"""Rooms"""
 
 
 @app.get("/api/rooms/")
@@ -42,9 +43,37 @@ def get_rooms(db: Session = Depends(connect_db)):
     return s_get_rooms(db)
 
 
+@app.post("/api/rooms/")
+def post_room(data: str = Body(...), current_user: dict = Depends(get_current_user), db: Session = Depends(connect_db)):
+    return s_post_room(db, current_user, data)
+
+
+@app.delete("/api/rooms/")
+def delete_room(id: int = Body(...), current_user: dict = Depends(get_current_user), db: Session = Depends(connect_db)):
+    return s_delete_room(db, current_user, id)
+
+
+"""Teachers"""
+
+
 @app.get("/api/teachers/")
 def get_teachers(db: Session = Depends(connect_db)):
     return s_get_teachers(db)
+
+
+@app.post("/api/teachers/")
+def post_teacher(data: str = Body(...), current_user: dict = Depends(get_current_user),
+                 db: Session = Depends(connect_db)):
+    return s_post_teacher(db, current_user, data)
+
+
+@app.delete("/api/teachers/")
+def delete_teacher(id: int = Body(...), current_user: dict = Depends(get_current_user),
+                   db: Session = Depends(connect_db)):
+    return s_delete_teacher(db, current_user, id)
+
+
+"""Schedule"""
 
 
 @app.get("/api/schedule/")
@@ -62,6 +91,14 @@ async def delete_schedule(key: str = Body(...), current_user: dict = Depends(get
     return await asyncio.to_thread(_run_with_session, s_delete_schedule, current_user, key)
 
 
+"""Subjects"""
+
+
+@app.get("/api/subjects/")
+def get_subjects(db: Session = Depends(connect_db)):
+    return s_get_subjects(db)
+
+
 @app.post("/api/subjects/")
 def post_subject(data: str = Body(...), current_user: dict = Depends(get_current_user),
                  db: Session = Depends(connect_db)):
@@ -74,33 +111,17 @@ def delete_subject(id: int = Body(...), current_user: dict = Depends(get_current
     return s_delete_subject(db, current_user, id)
 
 
-@app.post("/api/rooms/")
-def post_room(data: str = Body(...), current_user: dict = Depends(get_current_user), db: Session = Depends(connect_db)):
-    return s_post_room(db, current_user, data)
-
-
-@app.delete("/api/rooms/")
-def delete_room(id: int = Body(...), current_user: dict = Depends(get_current_user), db: Session = Depends(connect_db)):
-    return s_delete_room(db, current_user, id)
-
-
-@app.post("/api/teachers/")
-def post_teacher(data: str = Body(...), current_user: dict = Depends(get_current_user),
-                 db: Session = Depends(connect_db)):
-    return s_post_teacher(db, current_user, data)
-
-
-@app.delete("/api/teachers/")
-def delete_teacher(id: int = Body(...), current_user: dict = Depends(get_current_user),
-                   db: Session = Depends(connect_db)):
-    return s_delete_teacher(db, current_user, id)
+"""Register"""
 
 
 @app.post("/api/register")
-async def post_register(data: dict = Body(...)):
+async def post_register(response: Response, data: dict = Body(...)):
     return await asyncio.to_thread(_run_with_session, s_post_register, data)
 
 
+"""Auth"""
+
+
 @app.post("/api/auth")
-async def post_auth(data: dict = Body(...)):
+async def post_auth(response: Response, data: dict = Body(...)):
     return await asyncio.to_thread(_run_with_session, s_post_auth, data)

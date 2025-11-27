@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timedelta, timezone
+from sqlalchemy.exc import IntegrityError
 from typing import Optional, Dict, Any
 
 import bcrypt
@@ -9,7 +10,6 @@ from jwt import ExpiredSignatureError, InvalidTokenError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 
 from core.db_work import Auth, connect_db
 
