@@ -1,8 +1,7 @@
-import os
 from dotenv import dotenv_values
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.exc import IntegrityError
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 
 import bcrypt
 import jwt
