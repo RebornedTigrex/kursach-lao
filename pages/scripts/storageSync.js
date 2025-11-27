@@ -1,3 +1,16 @@
+function getCookie(name) {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      const [key, value] = cookie.trim().split('=');
+      if (key === name) {
+        return decodeURIComponent(value);
+      }
+    }
+    return null;
+  }
+
+
+
 class StorageSync {
     constructor(entityKey, backendUrl) {
         this.entityKey = entityKey; // например, 'rooms', 'subjects', 'teachers', 'shedule'
@@ -34,6 +47,7 @@ class StorageSync {
                 credentials: 'include',
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${getCookie('jwt')}`,
                 }
             });
             const result = await response.json()
@@ -46,13 +60,14 @@ class StorageSync {
     
 
     async addToBackend(data){
-        console.log(data)
+        console.log(data);
         try{
             await fetch(this.backendUrl, {
                 method: "POST",
                 credentials: 'include',
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${getCookie('jwt')}`,
                 },
                 body: JSON.stringify(data)
             });
@@ -69,6 +84,7 @@ class StorageSync {
                 credentials: 'include',
                 headers: {
                     "Content-Type": "application/json",
+                    "Authorization": `Bearer ${getCookie('jwt')}`,
                 },
                 body: JSON.stringify(index)
             });

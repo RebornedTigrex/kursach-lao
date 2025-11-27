@@ -26,7 +26,7 @@ document.querySelector('.form').addEventListener('submit', function(e) {
         const token = data.access_token;
         //console.log(token)
         //console.log(data)
-        document.cookie = `jwt=${token}; path=/; HttpOnly; Secure; SameSite=Strict`;
+        document.cookie = `jwt=${token}; path=/; Secure; SameSite=Strict`;
 
         window.location.href = 'schedule.html';
     })
