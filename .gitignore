@@ -5,3 +5,4 @@ database.db
 .vscode
 .idea
 core/.env
+.env
