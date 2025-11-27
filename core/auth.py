@@ -1,4 +1,5 @@
 import os
+from dotenv import dotenv_values
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.exc import IntegrityError
 from typing import Optional, Dict, Any
@@ -13,15 +14,17 @@ from sqlalchemy.orm import Session
 
 from core.db_work import Auth, connect_db
 
-SECRET_KEY = os.getenv("SECRET_KEY", r"../.env")
+path_to_env = r"./.env"
+SECRET_KEY = dotenv_values(path_to_env)["SECRET_KEY"]
 if not SECRET_KEY:
     raise RuntimeError("SECRET_KEY is not set.")
 
-ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ALGORITHM = dotenv_values(path_to_env)["ALGORITHM"]
+if not ALGORITHM:
+    raise RuntimeError("ALGORITHM is not set.")
 
-try:
-    ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "15"))
-except ValueError:
+ACCESS_TOKEN_EXPIRE_MINUTES = dotenv_values(path_to_env)["ALGORITHM"]
+if not ACCESS_TOKEN_EXPIRE_MINUTES:
     ACCESS_TOKEN_EXPIRE_MINUTES = 15
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl = "/api/auth")

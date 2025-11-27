@@ -24,7 +24,7 @@ services:
     volumes:
       - ./nginx/:/etc/nginx/
     env_file:
-      - .env
+      - core/.env
 
   frontend:
     build:
