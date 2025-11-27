@@ -1,5 +1,3 @@
-
-
 class StorageSync {
     constructor(entityKey, backendUrl) {
         this.entityKey = entityKey; // например, 'rooms', 'subjects', 'teachers', 'shedule'
@@ -33,6 +31,7 @@ class StorageSync {
         try {
             const response = await fetch(this.backendUrl, {
                 method: "GET",
+                credentials: 'include',
                 headers: {
                     "Content-Type": "application/json",
                 }
@@ -51,11 +50,13 @@ class StorageSync {
         try{
             await fetch(this.backendUrl, {
                 method: "POST",
+                credentials: 'include',
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(data)
             });
+        console.log(body)
         } catch (err) {
             console.log(err);
         }
@@ -65,6 +66,7 @@ class StorageSync {
         try{
             await fetch(this.backendUrl, {
                 method: "DELETE",
+                credentials: 'include',
                 headers: {
                     "Content-Type": "application/json",
                 },

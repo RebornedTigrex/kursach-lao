@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./core:/app/core
+      - ./database.db:/app/database.db
+    environment:
+      - TZ=Europe/Moscow
+
+  sertificates:
+    build:
+      context: ./certbot
+      dockerfile: Dockerfile.certificates
+      args:
+        - DOMAIN_EMAIL: ${DOMAIN_EMAIL}
+        - DOMAIN_URL : ${DOMAIN_URL}
+    ports:
+      - "6000:80"
+    volumes:
+      - ./nginx/:/etc/nginx/
+    env_file:
+      - .env
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backendw

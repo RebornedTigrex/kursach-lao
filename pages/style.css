@@ -30,15 +30,20 @@
             transition: all 0.3s;
             transform: translateX(0);
             z-index: 100;
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
         }
         .sidebar.collapsed {transform: translateX(-200px);}
+
+        .sidebar-flex {display: flex; height: 80px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);}
+
+        .slable.offsl {display: none;}
 
         .logo {
             padding: 20px;
             font-size: 1.2rem;
             font-weight: bold;
             text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .sidebar ul {list-style: none; padding: 20px 0;}
@@ -53,8 +58,9 @@
 
         .sidebar li i {
             margin-right: 10px;
-            width: 20px;
+            /*width: 20px;*/
             text-align: center;
+            transition: margin 0.3s ease;
         }
 
         .sidebar li:hover {
@@ -67,13 +73,58 @@
         }
 
         .toggle-sidebar {
-            position: absolute;
-            right: 10px;
+            /*position: absolute;*/
+            right: 2vw;
             top: 20px;
             background: none;
             border: none;
             color: white;
             cursor: pointer;
+            font-size: 1.8rem;
+            padding: 12px;
+        }
+
+        .login-card {
+            position: absolute;
+            bottom: 0;
+            width: 250px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .login-card:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .login-card-a {
+            text-decoration: none;
+        }
+
+        .login-card-flex {
+            display: flex;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            padding-left: 10px;
+            align-items: center;
+        }
+
+        .login-card-photo {
+            height: 50px;
+            width: 50px;
+        }
+
+        .login-card-img {
+            height: 50px;
+            width: 50px;
+            border-radius: 50%;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+        }
+
+        .login-name {
+            padding: 5px;
+            color: white;
+            text-overflow: ellipsis;
+            overflow: hidden;
             font-size: 1.2rem;
         }
 
@@ -83,11 +134,99 @@
             padding: 20px;
             width: calc(100% - 250px);
             transition: all 0.3s;
+            text-align: -webkit-center;
         }
 
         .sidebar.collapsed + .main-content {
             margin-left: 50px;
             width: calc(100% - 50px);
+        }
+
+        /*=================== Блок регистрации-авторизации =================*/
+        .button-back-to-schedule {
+            background-color: white;
+            border-bottom-right-radius: 15px;
+            box-shadow: 8px 0 10px rgba(0, 0, 255, 0.2), 0px 8px 10px rgba(0, 0, 255, 0.2);
+            padding: 3px;
+        }
+
+        .button-back-to-schedule:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        .form-back {
+            width: 400px;
+            height: 550px;
+            /*background: #483d8b;*/
+            border-radius: 20px;
+            position: absolute;
+            place-self: anchor-center;
+        }
+
+        .form {
+            padding: 10px;
+            width:350px;
+            height: 500px;
+            position: absolute;
+            display: flex;
+            place-self: anchor-center;
+            flex-direction: column;
+            align-items: center;
+            background: white;
+            border-radius: 20px;
+            box-shadow:
+                -25px 0 15px rgba(0, 0, 255, 0.2),   /* тень слева */
+                25px 0 15px rgba(0, 0, 255, 0.2),    /* тень справа */
+                0 20px 30px rgba(0, 0, 255, 0.3);    /* тень снизу */;
+        }
+
+        .rlable {
+            font-size: xxx-large;
+            font-weight: bold;
+        }
+
+        .form-grid {
+            width: 300px;
+            display: grid;
+            padding-top: 20px;
+        }
+
+        #uname {
+            font-size: 20px;
+            padding: 5px;
+            height: 30px;
+        }
+
+        #umail {
+            font-size: 20px;
+            padding: 5px;
+            height: 30px;
+        }
+
+        #upass {
+            font-size: 20px;
+            padding: 5px;
+            height: 30px;
+        }
+
+        #reg-button {
+            width: 300px;
+            position: absolute;
+            bottom: 150px;
+            left: 25px;
+        }
+
+        #change-log-reg-button {
+            position: absolute;
+            bottom: 50px;
+        }
+
+
+        /*==================== Log-In/Register Content =====================*/
+        .log-reg-link {
+            font-weight: bold;
+            text-decoration: none;
+            color: #333333;
         }
 
         /*======================= Недельный селектор =======================*/
@@ -104,6 +243,8 @@
             padding: 10px;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: calc(100vw - 500px);
         }
 
         .week-selector button {
