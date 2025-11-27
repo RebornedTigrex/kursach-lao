@@ -16,14 +16,14 @@ function insertSidebar(activeIndex = 0) {
             <a class="login-card-a" href="registration.html">
                 <div class="login-card-flex">
                     <div class="login-card-photo">
-                        <img class="login-card-img" src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%2Fid%2FOIP.yvj61X0dbFFF8viA7fmKcAHaEV%3Fpid%3DApi&f=1&ipt=1ae4405c4e7067ae6eb24120bdff00d4d7ee5b09192b3a032a0f6614763abff3&ipo=images">
+                        <img class="login-card-img" src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%2Fid%2FOIP.E5_V_J9ntKWZkr0_FzUAFwHaHa%3Fpid%3DApi&f=1&ipt=817d54fcc65b988545092ed92315c621457ca5a61a79816d5e21769b053b7f12&ipo=images">
                     </div>
                     <p class="login-name slable">1111111111111111111111</p>
                 </div>
             </a>
         </div>
     </div>
-    `;
+    `;//https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%2Fid%2FOIP.yvj61X0dbFFF8viA7fmKcAHaEV%3Fpid%3DApi&f=1&ipt=1ae4405c4e7067ae6eb24120bdff00d4d7ee5b09192b3a032a0f6614763abff3&ipo=images">
 
     const main = document.querySelector('.main-content');
     if (main) {

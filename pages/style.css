@@ -91,6 +91,10 @@
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        .login-card:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
         .login-card-a {
             text-decoration: none;
         }
@@ -139,6 +143,17 @@
         }
 
         /*=================== Блок регистрации-авторизации =================*/
+        .button-back-to-schedule {
+            background-color: white;
+            border-bottom-right-radius: 15px;
+            box-shadow: 8px 0 10px rgba(0, 0, 255, 0.2), 0px 8px 10px rgba(0, 0, 255, 0.2);
+            padding: 3px;
+        }
+
+        .button-back-to-schedule:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+
         .form-back {
             width: 400px;
             height: 550px;

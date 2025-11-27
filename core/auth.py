@@ -62,6 +62,7 @@ def verify_access_token(token: str) -> Dict[str, Any]:
     В случае ошибки бросает HTTPException 401.
     :return Возвращает payload (словарь).
     """
+    print(token)
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms = [ALGORITHM])
     except ExpiredSignatureError:
@@ -71,8 +72,8 @@ def verify_access_token(token: str) -> Dict[str, Any]:
     return payload
 
 
-def get_current_user(db: Session = Depends(connect_db), token: str = Depends(oauth2_scheme)) -> dict[
-    str, Any]:
+def get_current_user(db: Session = Depends(connect_db), token: str = Depends(oauth2_scheme)) -> dict[str, Any]:
+    print(token)
     """
     Зависимость для эндпоинтов FastAPI.
     Проверяет токен, находит пользователя в БД и возвращает ORM-объект Auth.
