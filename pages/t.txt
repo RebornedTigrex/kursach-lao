@@ -123,3 +123,8 @@ Certainly! Here's a simple JavaScript client-side script that handles login and 
 - For production, consider adding refresh tokens, token expiration handling, and secure storage mechanisms.
 
 Let me know if you'd like a more advanced version or specific features!
+
+
+
+
+{access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJsb…zAxfQ.gbRgRaetvzTXZZWO15tzPxSgI9iBXfh7rLrd5MVVBGk', token_type: 'bearer'}
