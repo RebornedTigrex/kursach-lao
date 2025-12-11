@@ -28,9 +28,9 @@ document.querySelector('.form').addEventListener('submit', function(e) {
         const token = data.access_token;
 
         document.cookie = `jwt=${token}; path=/; Secure; SameSite=Strict`;
-        console.log(token)
-        console.log(data)
-        //window.location.href = 'schedule.html';
+        //console.log(token)
+        //console.log(data)
+        window.location.href = 'schedule.html';
     })
     .catch(error => {
         alert(error.message);

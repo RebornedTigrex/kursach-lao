@@ -1,3 +1,5 @@
+//import { getUsername } from '../scripts/storageSync.js';
+
 function insertSidebar(activeIndex = 0) {
     const sidebarHTML = `
     <div class="sidebar">
@@ -10,7 +12,7 @@ function insertSidebar(activeIndex = 0) {
             <li><i class="fas spc fa-book"></i> <p class="slable">Предметы</p></li>
             <li><i class="fas spc fa-chalkboard-teacher"></i> <p class="slable">Преподаватели</p></li>
             <li><i class="fas spc fa-building"></i> <p class="slable">Аудитории</p></li>
-            <li><i class="fas spc fa-cog"></i> <p class="slable">Настройки</p></li>
+            <!--<li><i class="fas spc fa-cog"></i> <p class="slable">Настройки</p></li>-->
         </ul>
         <div class="login-card">
             <a class="login-card-a" href="registration.html">
@@ -18,7 +20,7 @@ function insertSidebar(activeIndex = 0) {
                     <div class="login-card-photo">
                         <img class="login-card-img" src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%2Fid%2FOIP.E5_V_J9ntKWZkr0_FzUAFwHaHa%3Fpid%3DApi&f=1&ipt=817d54fcc65b988545092ed92315c621457ca5a61a79816d5e21769b053b7f12&ipo=images">
                     </div>
-                    <p class="login-name slable">1111111111111111111111</p>
+                    <p class="login-name slable">Войти</p>
                 </div>
             </a>
         </div>
@@ -37,13 +39,15 @@ function insertSidebar(activeIndex = 0) {
         document.querySelectorAll('.sidebar ul li')[activeIndex].classList.add('active');
     }
 
+    //console.log(getUsername())
+
     // Обработчики переходов
     const links = [
         'schedule.html',
         'subjects.html',
         'teachers.html',
         'rooms.html',
-        'settings.html'
+        //'settings.html'
     ];
     document.querySelectorAll('.sidebar ul li').forEach((li, idx) => {
         li.addEventListener('click', () => window.location.href = links[idx]);

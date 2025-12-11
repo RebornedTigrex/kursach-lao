@@ -125,3 +125,9 @@ async def post_register(response: Response, data: dict = Body(...)):
 @app.post("/api/auth")
 async def post_auth(response: Response, data: dict = Body(...)):
     return await asyncio.to_thread(_run_with_session, s_post_auth, data)
+
+
+"""IsAlive"""
+@app.get("/api/ia")
+async def alive(current_user: dict = Depends(get_current_user)):
+    return [{"username": current_user["username"]}]
