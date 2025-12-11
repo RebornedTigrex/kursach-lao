@@ -128,6 +128,8 @@ async def post_auth(response: Response, data: dict = Body(...)):
 
 
 """IsAlive"""
+
+
 @app.get("/api/ia")
-async def alive(current_user: dict = Depends(get_current_user)):
+def alive(current_user: dict = Depends(get_current_user)):
     return [{"username": current_user["username"]}]
