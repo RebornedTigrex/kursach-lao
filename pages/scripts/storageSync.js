@@ -9,7 +9,25 @@ function getCookie(name) {
     return null;
   }
 
-
+export async function getUsername() {
+    try {
+        const response = await fetch("http://127.0.0.1:8000/api/ia", {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${getCookie('jwt')}`,
+            },
+            
+        });
+        const result = await response.json()
+        //const result = response;
+        //console.log(result);
+        return result;
+    } catch (err) {
+        console.log(err);
+    }
+}
 
 class StorageSync {
     constructor(entityKey, backendUrl) {
@@ -60,7 +78,7 @@ class StorageSync {
     
 
     async addToBackend(data){
-        console.log(data);
+        // console.log(data);
         try{
             await fetch(this.backendUrl, {
                 method: "POST",
@@ -71,7 +89,7 @@ class StorageSync {
                 },
                 body: JSON.stringify(data)
             });
-        console.log(body)
+        // console.log(body)
         } catch (err) {
             console.log(err);
         }

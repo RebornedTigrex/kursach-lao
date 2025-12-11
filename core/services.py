@@ -182,7 +182,6 @@ def s_post_auth(db: Session, data: Dict[str, Any] = Body(...)) -> Dict[str, str]
     token = authenticate_user(db, username, password)
     return {"access_token": token, "token_type": "bearer"}
 
-
 __all__ = ["s_get_subjects", "s_get_rooms", "s_get_teachers", "s_get_schedule", "s_post_schedule", "s_delete_schedule",
            "s_post_subject", "s_delete_subject", "s_post_room", "s_delete_room", "s_post_teacher", "s_delete_teacher",
            "s_post_register", "s_post_auth"]

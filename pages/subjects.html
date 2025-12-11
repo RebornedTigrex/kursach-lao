@@ -5,6 +5,7 @@
     <title>Предметы</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <script type="module" src="../scripts/check_on_login.js" defer></script>
 </head>
 <body>
     <script src="../scripts/sidebar.js"></script>
@@ -60,6 +61,18 @@
             if (e.key === 'subjects') renderSubjects();
         });
         renderSubjects();
+    </script>
+    <script type="module" defer>
+        import {getUsername} from '../scripts/storageSync.js';
+        let name = await getUsername();
+        name = name[0].username;
+        if (name != "Invalid token") {
+            //console.log(name);
+            var element = document.querySelector(".login-name");
+            if (element) {
+                element.textContent = name;
+            }
+        }
     </script>
 </body>
 </html>

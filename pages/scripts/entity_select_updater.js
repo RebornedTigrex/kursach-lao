@@ -1,4 +1,4 @@
-import StorageSync from 'http://127.0.0.1:3000/scripts/entity_select_updater.js';
+import StorageSync from '../scripts/storageSync.js';
 
 // Универсальные хранилища для всех сущностей
 const subjectStorage = new StorageSync('subjects', 'http://127.0.0.1:8000/api/subjects/');
