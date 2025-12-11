@@ -62,5 +62,17 @@
         });
         renderSubjects();
     </script>
+    <script type="module" defer>
+        import {getUsername} from '../scripts/storageSync.js';
+        let name = await getUsername();
+        name = name[0].username;
+        if (name != "Invalid token") {
+            //console.log(name);
+            var element = document.querySelector(".login-name");
+            if (element) {
+                element.textContent = name;
+            }
+        }
+    </script>
 </body>
 </html>
