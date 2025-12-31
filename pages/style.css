@@ -2,465 +2,601 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-        body {
-            display: flex;
-            background-color: #f5f5f5;
-            color: #333333;
-        }
-
-        .entity-list { max-width: 400px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 24px; }
-        .entity-list h2 { margin-bottom: 16px; text-align: center; }
-        .entity-list ul { list-style: none; padding: 0; margin-bottom: 16px; }
-        .entity-list li { padding: 8px 0; border-bottom: 1px solid #eee; }
-        .entity-list form { display: flex; gap: 8px; }
-        .entity-list input[type="text"] { flex: 1; padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; }
-        .entity-list button { padding: 6px 14px; background: #6a5acd; color: #fff; border: none; border-radius: 4px; cursor: pointer; transition: background 0.2s; }
-        .entity-list button:hover { background: #483d8b; }
-
-        /*======================= Сайдбар ======================= */
-        .sidebar {
-            width: 250px;
-            height: 100vh;
-            background: linear-gradient(to bottom, #6a5acd, #9370db);
-            color: white;
-            position: fixed;
-            transition: all 0.3s;
-            transform: translateX(0);
-            z-index: 100;
-            border-top-right-radius: 10px;
-            border-bottom-right-radius: 10px;
-        }
-        .sidebar.collapsed {transform: translateX(-200px);}
-
-        .sidebar-flex {display: flex; height: 80px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);}
-
-        .slable.offsl {display: none;}
-
-        .logo {
-            padding: 20px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .sidebar ul {list-style: none; padding: 20px 0;}
-
-        .sidebar li {
-            padding: 12px 20px;
-            cursor: pointer;
-            transition: background 0.2s;
-            display: flex;
-            align-items: center;
-        }
-
-        .sidebar li i {
-            margin-right: 10px;
-            /*width: 20px;*/
-            text-align: center;
-            transition: margin 0.3s ease;
-        }
-
-        .sidebar li:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .sidebar li.active {
-            background-color: rgba(255, 255, 255, 0.2);
-            border-left: 3px solid white;
-        }
-
-        .toggle-sidebar {
-            /*position: absolute;*/
-            right: 2vw;
-            top: 20px;
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-            font-size: 1.8rem;
-            padding: 12px;
-        }
-
-        .login-card {
-            position: absolute;
-            bottom: 0;
-            width: 250px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .login-card:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .login-card-a {
-            text-decoration: none;
-        }
-
-        .login-card-flex {
-            display: flex;
-            padding-top: 10px;
-            padding-bottom: 10px;
-            padding-left: 10px;
-            align-items: center;
-        }
-
-        .login-card-photo {
-            height: 50px;
-            width: 50px;
-        }
-
-        .login-card-img {
-            height: 50px;
-            width: 50px;
-            border-radius: 50%;
-            aspect-ratio: 1/1;
-            object-fit: cover;
-        }
-
-        .login-name {
-            padding: 5px;
-            color: white;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            font-size: 1.2rem;
-        }
-
-        /*======================= Основное содержимое =======================*/
-        .main-content {
-            margin-left: 250px;
-            padding: 20px;
-            width: calc(100% - 250px);
-            transition: all 0.3s;
-            text-align: -webkit-center;
-        }
-
-        .sidebar.collapsed + .main-content {
-            margin-left: 50px;
-            width: calc(100% - 50px);
-        }
-
-        /*=================== Блок регистрации-авторизации =================*/
-        .button-back-to-schedule {
-            background-color: white;
-            border-bottom-right-radius: 15px;
-            box-shadow: 8px 0 10px rgba(0, 0, 255, 0.2), 0px 8px 10px rgba(0, 0, 255, 0.2);
-            padding: 3px;
-        }
-
-        .button-back-to-schedule:hover {
-            background-color: rgba(255,255,255,0.2);
-        }
-
-        .form-back {
-            width: 400px;
-            height: 550px;
-            /*background: #483d8b;*/
-            border-radius: 20px;
-            position: absolute;
-            place-self: anchor-center;
-        }
-
-        .form {
-            padding: 10px;
-            width:350px;
-            height: 500px;
-            position: absolute;
-            display: flex;
-            place-self: anchor-center;
-            flex-direction: column;
-            align-items: center;
-            background: white;
-            border-radius: 20px;
-            box-shadow:
-                -25px 0 15px rgba(0, 0, 255, 0.2),   /* тень слева */
-                25px 0 15px rgba(0, 0, 255, 0.2),    /* тень справа */
-                0 20px 30px rgba(0, 0, 255, 0.3);    /* тень снизу */;
-        }
-
-        .rlable {
-            font-size: xxx-large;
-            font-weight: bold;
-        }
-
-        .form-grid {
-            width: 300px;
-            display: grid;
-            padding-top: 20px;
-        }
-
-        #uname {
-            font-size: 20px;
-            padding: 5px;
-            height: 30px;
-        }
-
-        #umail {
-            font-size: 20px;
-            padding: 5px;
-            height: 30px;
-        }
-
-        #upass {
-            font-size: 20px;
-            padding: 5px;
-            height: 30px;
-        }
-
-        #reg-button {
-            width: 300px;
-            position: absolute;
-            bottom: 150px;
-            left: 25px;
-        }
-
-        #change-log-reg-button {
-            position: absolute;
-            bottom: 50px;
-        }
-
-
-        /*==================== Log-In/Register Content =====================*/
-        .log-reg-link {
-            font-weight: bold;
-            text-decoration: none;
-            color: #333333;
-        }
-
-        /*======================= Недельный селектор =======================*/
-        .week-selector {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background-color: white;
-            margin-bottom: 20px;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            max-width: 600px;
-            width: calc(100vw - 500px);
-        }
-
-        .week-selector button {
-            min-width: 36px;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            background-color: #6a5acd;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background 0.2s;
-            padding: 0;
-        }
-
-        .current-week {
-            flex: 1 1 auto;
-            text-align: center;
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: #2563eb;
-            cursor: pointer;
-            text-decoration: underline;
-            transition: color 0.2s;
-            margin: 0 10px;
-            min-width: 160px;
-        }
-
-        .week-selector button:hover {
-            background-color: #483d8b;
-        }
-
-        .current-week:hover {
-            color: #1741a6;           /* более тёмный синий при наведении */
-            text-decoration: underline;
-        }
-
-        /*======================= Таблица расписания =======================*/
-        .timetable {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .timetable th, .timetable td {
-            padding: 12px 15px;
-            text-align: center;
-            border: 1px solid #e0e0e0;
-        }
-
-        .timetable th {
-            background-color: #6a5acd;
-            color: white;
-            font-weight: 500;
-        }
-
-        .timetable .time {
-            background-color: #f0f0f0;
-            font-weight: 500;
-        }
-
-        .timetable .lesson {
-            background-color: #e6e6fa;
-            cursor: pointer;
-            transition: background 0.2s;
-            height: 60px;
-        }
-
-        .timetable .lesson:hover {
-            background-color: #d8bfd8;
-        }
-
-        .timetable .lesson-content {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            height: 100%;
-        }
-
-        .timetable .break {
-            background-color: #f9f9f9;
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .timetable .break td {
-            padding: 5px;
-        }
-
-        /*======================= Модальное окно =======================*/
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal {
-            background-color: white;
-            border-radius: 8px;
-            width: 400px;
-            max-width: 90%;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            transform: translateY(-20px);
-            transition: all 0.3s;
-        }
-
-        .modal-overlay.active .modal {
-            transform: translateY(0);
-        }
-
-        .modal-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h3 {
-            color: #6a5acd;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: #666;
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-
-        .form-group select, .form-group input {
-            width: 100%;
-            padding: 8px 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-
-        .modal-footer {
-            padding: 15px 20px;
-            border-top: 1px solid #eee;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: background 0.2s;
-        }
-
-        .btn-primary {
-            background-color: #6a5acd;
-            color: white;
-            border: none;
-        }
-
-        .btn-primary:hover {
-            background-color: #483d8b;
-        }
-
-        .btn-danger {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-        }
-
-        .btn-danger:hover {
-            background-color: #c82333;
-        }
-
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-            border: none;
-        }
-
-        .btn-secondary:hover {
-            background-color: #5a6268;
-        }
+body {
+    display: flex;
+    background-color: #F9FAFC;
+    color: #2D3748;
+    min-height: 100vh;
+}
+
+.entity-list {
+    max-width: 500px;
+    margin: 60px auto;
+    background: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    padding: 32px;
+}
+
+.entity-list h2 {
+    margin-bottom: 24px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1A202C;
+}
+
+.entity-list ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 24px;
+}
+
+.entity-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #EDF2F7;
+    transition: background 0.2s;
+}
+
+.entity-list li:hover {
+    background: #F7FAFC;
+}
+
+.entity-list form {
+    display: flex;
+    gap: 12px;
+}
+
+.entity-list input[type="text"] {
+    flex: 1;
+    padding: 10px 16px;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.entity-list input[type="text"]:focus {
+    border-color: #4A90E2;
+    outline: none;
+}
+
+.entity-list button {
+    padding: 10px 20px;
+    background: #4A90E2;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.entity-list button:hover {
+    background: #3182CE;
+}
+
+/* Сайдбар */
+.sidebar {
+    width: 280px;
+    height: 100vh;
+    background: linear-gradient(180deg, #4A90E2 0%, #3182CE 100%);
+    color: #FFFFFF;
+    position: fixed;
+    transition: transform 0.3s ease;
+    transform: translateX(0);
+    z-index: 100;
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar.collapsed {
+    transform: translateX(-220px);
+}
+
+.sidebar-flex {
+    display: flex;
+    align-items: center;
+    height: 80px;
+    /*padding: 0 20px;*/
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.logo {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-left: 16px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 20px 0;
+}
+
+.sidebar li {
+    /*padding: 14px 24px;*/
+    padding: 14px 18px 14px 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.sidebar li i {
+    margin-right: 16px;
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}
+
+.sidebar li:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.sidebar li.active {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-left: 4px solid #FFFFFF;
+}
+
+li.active {
+    padding: 14px 18px 14px 16px;
+}
+
+.toggle-sidebar {
+    background: none;
+    border: none;
+    color: #FFFFFF;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+    padding: 12px;
+}
+
+.fa-bars {
+    width: 20px;
+    height: 20px;
+}
+
+.toggle-sidebar:hover {
+    transform: scale(1.1);
+    background-color: rgba(255, 255, 255, 0.15);;
+    background-size: 8px;
+    border-radius: 47%;
+}
+
+.login-card {
+    position: absolute;
+    bottom: 20px;
+    left: 6px;
+    right: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px 5px 12px 12px;
+}
+
+.login-card:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.login-card-a {
+    text-decoration: none;
+    color: #FFFFFF;
+}
+
+.login-card-flex {
+    display: flex;
+    align-items: center;
+}
+
+.login-card-photo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    /*margin-right: 12px;*/
+}
+
+.login-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.login-name {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-left: 12px;
+}
+
+/* Основное содержимое */
+.main-content {
+    margin-left: 280px;
+    padding: 40px;
+    width: calc(100% - 280px);
+    transition: all 0.3s;
+}
+
+.sidebar.collapsed + .main-content {
+    margin-left: 40px;
+    width: calc(100% - 40px);
+}
+
+/* Селектор недели */
+.week-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 32px;
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.prev-week, .next-week {
+    background: none;
+    border: none;
+    color: #4A90E2;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 16px;
+    transition: color 0.2s;
+}
+
+.prev-week:hover, .next-week:hover {
+    color: #3182CE;
+}
+
+.current-week {
+    font-size: 1.2rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.current-week:hover {
+    background: #F7FAFC;
+}
+
+/* Таблица расписания */
+.timetable {
+    width: 100%;
+    border-collapse: collapse;
+    background: #FFFFFF;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+th {
+    border-left: 2px solid #eaedef;
+}
+
+.timetable th, .timetable td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid #EDF2F7;
+}
+
+.timetable th {
+    background: #F7FAFC;
+    font-weight: 600;
+    color: #1A202C;
+}
+
+.timetable tr:nth-child(even) {
+    background: #F7FAFC;
+}
+
+#unic-detail {
+    border-left: '';
+}
+
+.timetable .lesson {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.lesson {
+    border-left: 2px solid #EDF2F7;
+}
+
+.timetable .lesson:hover {
+    background: #E2E8F0;
+}
+
+.lesson-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.9rem;
+}
+
+.lesson-content div b {
+    color: #4A90E2;
+}
+
+.break td {
+    background: #EDF2F7;
+    text-align: center;
+    font-style: italic;
+    color: #718096;
+    padding: 8px;
+}
+
+/* Модальное окно */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    width: 450px;
+    max-width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    transform: translateY(-50px);
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active .modal {
+    transform: translateY(0);
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #EDF2F7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #1A202C;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #A0AEC0;
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: #2D3748;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #4A5568;
+}
+
+.form-group select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: #FFFFFF;
+    transition: border-color 0.2s;
+}
+
+.form-group select:focus {
+    border-color: #4A90E2;
+    outline: none;
+}
+
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #EDF2F7;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background-color: #4A90E2;
+    color: #FFFFFF;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #3182CE;
+}
+
+.btn-danger {
+    background-color: #F56565;
+    color: #FFFFFF;
+    border: none;
+}
+
+.btn-danger:hover {
+    background-color: #E53E3E;
+}
+
+.btn-secondary {
+    background-color: #E2E8F0;
+    color: #2D3748;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background-color: #CBD5E0;
+}
+
+/* Формы логина и регистрации */
+.form-back {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+    background: linear-gradient(135deg, #F9FAFC 0%, #EDF2F7 100%);
+}
+
+.form {
+    background: #FFFFFF;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    width: 400px;
+    max-width: 90%;
+}
+
+.rlable {
+    text-align: center;
+    margin-bottom: 24px;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #1A202C;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.form-grid-lot label {
+    font-weight: 500;
+    color: #4A5568;
+    margin-bottom: 8px;
+}
+
+.form-grid-lot input {
+    padding: 12px 16px;
+    border: 1px solid #c7ccd4;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    transition: transform 0.2s;
+}
+
+.form-grid-lot input:focus {
+    border-color: #4A90E2;
+    outline: none;
+}
+
+.form-grid-lot input:hover {
+    transform: scale(1.02);
+}
+
+.form-grid-lot {
+    display: grid;
+}
+
+#reg-button {
+    margin-top: 16px;
+    padding: 12px;
+    background: #4A90E2;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#reg-button:hover {
+    background: #3182CE;
+}
+
+#change-log-reg-button {
+    text-align: center;
+    margin-top: 16px;
+}
+
+.log-reg-link {
+    color: #4A90E2;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.log-reg-link:hover {
+    color: #3182CE;
+}
+
+.button-back-to-schedule {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: #4A90E2;
+    transition: transform 0.2s;
+}
+
+.button-back-to-schedule:hover {
+    transform: scale(1.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-radius: 0;
+    }
+
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px;
+    }
+
+    .timetable {
+        overflow-x: auto;
+    }
+}

@@ -5,13 +5,13 @@ function insertSidebar(activeIndex = 0) {
     <div class="sidebar">
         <div class="sidebar-flex">
             <button class="toggle-sidebar"><i class="fas fa-bars"></i></button>
-            <div class="spc logo">Расписание Факультета</div>
+            <div class="logo">Расписание Факультета</div>
         </div>
         <ul>
             <li><i class="fas spc fa-calendar-alt"></i> <p class="slable">Расписание</p></li>
             <li><i class="fas spc fa-book"></i> <p class="slable">Предметы</p></li>
-            <li><i class="fas spc fa-chalkboard-teacher"></i> <p class="slable">Преподаватели</p></li>
             <li><i class="fas spc fa-building"></i> <p class="slable">Аудитории</p></li>
+            <li><i class="fas spc fa-chalkboard-teacher"></i> <p class="slable">Преподаватели</p></li>
             <!--<li><i class="fas spc fa-cog"></i> <p class="slable">Настройки</p></li>-->
         </ul>
         <div class="login-card">
@@ -71,6 +71,7 @@ function insertSidebar(activeIndex = 0) {
         Array.from(logoElements).forEach(function(element) {
         if (window.getComputedStyle(element).display === 'none') {
             element.style.display = 'block';
+            element.style.margin = '16px';
         } else {
             element.style.display = 'none';
         }
@@ -84,6 +85,7 @@ function insertSidebar(activeIndex = 0) {
                 sflex.style.justifyContent = 'flex-end';
                 lflex.style.justifyContent = 'flex-end';
                 element.style.margin = '0 0 0 auto';
+                //element.style.margin = '16px';
             }
         });
 
